@@ -69,6 +69,7 @@ declare global {
     VITE_PROXY: [string, string][];
     VITE_BUILD_COMPRESS: 'gzip' | 'brotli' | 'none';
     VITE_BUILD_COMPRESS_DELETE_ORIGIN_FILE: boolean;
+    VITE_BOBH_API_URL: string;
   }
 
   declare function parseInt(s: string | number, radix?: number): number;
