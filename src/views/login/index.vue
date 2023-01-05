@@ -66,7 +66,7 @@
   interface FormState {
     username: string;
     password: string;
-    rememberMe: Boolean;
+    remember: Boolean;
   }
 
   const { pkg, lastBuildTime } = __APP_INFO__;
@@ -75,7 +75,7 @@
   const message = useMessage();
   const loading = ref(false);
   const rememberForMonth = ref(true);
- 
+
   const LOGIN_NAME = PageEnum.BASE_LOGIN_NAME;
 
   const formInline = reactive({
@@ -105,7 +105,7 @@
         const params: FormState = {
           username,
           password,
-          rememberMe: unref(rememberForMonth),
+          remember: unref(rememberForMonth),
         };
 
         try {
