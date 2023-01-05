@@ -66,6 +66,9 @@ export class VAxios {
     //这里重新 赋值成最新的配置
     // @ts-ignore
     conf.requestOptions = opt;
+    conf.validateStatus = () => {
+      return true;
+    };
 
     return new Promise((resolve, reject) => {
       this.axiosInstance
