@@ -69,7 +69,7 @@ export class VAxios {
     conf.validateStatus = () => {
       return true;
     };
-
+    conf.withCredentials = true;
     return new Promise((resolve, reject) => {
       this.axiosInstance
         .request<any, AxiosResponse<Result>>(conf)
