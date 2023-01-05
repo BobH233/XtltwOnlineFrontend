@@ -79,9 +79,8 @@
   const LOGIN_NAME = PageEnum.BASE_LOGIN_NAME;
 
   const formInline = reactive({
-    username: '',
-    password: '',
-    isCaptcha: true,
+    username: 'FDY1',
+    password: 'publicpassword1',
   });
 
   const rules = {
@@ -109,7 +108,7 @@
         };
 
         try {
-          const { code, message: msg } = await userStore.login(params);
+          const { code, map_message: msg } = await userStore.login(params);
           message.destroyAll();
           if (code == ResultEnum.SUCCESS) {
             const toPath = decodeURIComponent((route.query?.redirect || '/') as string);
