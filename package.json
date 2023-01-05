@@ -1,11 +1,7 @@
 {
-  "name": "naive-ui-admin",
-  "version": "1.8.2",
-  "author": {
-    "name": "Ahjung",
-    "email": "735878602@qq.com",
-    "url": "https://github.com/jekip/naive-ui-admin"
-  },
+  "name": "xtltwonlinefrontend",
+  "version": "1.0.0alpha",
+  "author": "BobH",
   "private": true,
   "scripts": {
     "bootstrap": "yarn install",

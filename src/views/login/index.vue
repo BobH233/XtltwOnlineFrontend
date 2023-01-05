@@ -3,10 +3,8 @@
     <div class="view-account-header"></div>
     <div class="view-account-container">
       <div class="view-account-top">
-        <div class="view-account-top-logo">
-          <img :src="websiteConfig.loginImage" alt="" />
-        </div>
-        <div class="view-account-top-desc">{{ websiteConfig.loginDesc }}</div>
+        <h1>徐特立团委在线审核平台</h1>
+        <div class="view-account-top-desc">{{ pkg.version }} @ {{ lastBuildTime }}</div>
       </div>
       <div class="view-account-form">
         <n-form
@@ -42,10 +40,7 @@
           <n-form-item class="default-color">
             <div class="flex justify-between">
               <div class="flex-initial">
-                <n-checkbox v-model:checked="autoLogin">自动登录</n-checkbox>
-              </div>
-              <div class="flex-initial order-last">
-                <a href="javascript:">忘记密码</a>
+                <n-checkbox v-model:checked="rememberForMonth">记住登录一个月</n-checkbox>
               </div>
             </div>
           </n-form-item>
@@ -54,30 +49,6 @@
               登录
             </n-button>
           </n-form-item>
-          <n-form-item class="default-color">
-            <div class="flex view-account-other">
-              <div class="flex-initial">
-                <span>其它登录方式</span>
-              </div>
-              <div class="flex-initial mx-2">
-                <a href="javascript:">
-                  <n-icon size="24" color="#2d8cf0">
-                    <LogoGithub />
-                  </n-icon>
-                </a>
-              </div>
-              <div class="flex-initial mx-2">
-                <a href="javascript:">
-                  <n-icon size="24" color="#2d8cf0">
-                    <LogoFacebook />
-                  </n-icon>
-                </a>
-              </div>
-              <div class="flex-initial" style="margin-left: auto">
-                <a href="javascript:">注册账号</a>
-              </div>
-            </div>
-          </n-form-item>
         </n-form>
       </div>
     </div>
@@ -85,28 +56,31 @@
 </template>
 
 <script lang="ts" setup>
-  import { reactive, ref } from 'vue';
+  import { reactive, ref, unref } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { useUserStore } from '@/store/modules/user';
   import { useMessage } from 'naive-ui';
   import { ResultEnum } from '@/enums/httpEnum';
-  import { PersonOutline, LockClosedOutline, LogoGithub, LogoFacebook } from '@vicons/ionicons5';
+  import { PersonOutline, LockClosedOutline } from '@vicons/ionicons5';
   import { PageEnum } from '@/enums/pageEnum';
-  import { websiteConfig } from '@/config/website.config';
   interface FormState {
     username: string;
     password: string;
+    rememberMe: Boolean;
   }
+
+  const { pkg, lastBuildTime } = __APP_INFO__;
 
   const formRef = ref();
   const message = useMessage();
   const loading = ref(false);
-  const autoLogin = ref(true);
+  const rememberForMonth = ref(true);
+ 
   const LOGIN_NAME = PageEnum.BASE_LOGIN_NAME;
 
   const formInline = reactive({
-    username: 'admin',
-    password: '123456',
+    username: '',
+    password: '',
     isCaptcha: true,
   });
 
@@ -131,6 +105,7 @@
         const params: FormState = {
           username,
           password,
+          rememberMe: unref(rememberForMonth),
         };
 
         try {
@@ -149,7 +124,7 @@
           loading.value = false;
         }
       } else {
-        message.error('请填写完整信息，并且进行验证码校验');
+        message.error('信息填写不完整!');
       }
     });
   };
