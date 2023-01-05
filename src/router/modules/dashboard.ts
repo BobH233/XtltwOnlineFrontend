@@ -24,7 +24,7 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       title: 'Dashboard',
       icon: renderIcon(DashboardOutlined),
-      permissions: ['dashboard_console', 'dashboard_console', 'dashboard_workplace'],
+      permissions: ['FDY', 'TwAdmin'],
       sort: 0,
     },
     children: [
@@ -32,8 +32,8 @@ const routes: Array<RouteRecordRaw> = [
         path: 'console',
         name: `${routeName}_console`,
         meta: {
-          title: '主控台',
-          permissions: ['dashboard_console'],
+          title: '主控台_fdy',
+          permissions: ['FDY'],
           affix: true,
         },
         component: () => import('@/views/dashboard/console/console.vue'),
@@ -51,9 +51,9 @@ const routes: Array<RouteRecordRaw> = [
         path: 'workplace',
         name: `${routeName}_workplace`,
         meta: {
-          title: '工作台',
+          title: '工作台_TwAdmin',
           keepAlive: true,
-          permissions: ['dashboard_workplace'],
+          permissions: ['FDY'],
         },
         component: () => import('@/views/dashboard/workplace/workplace.vue'),
       },

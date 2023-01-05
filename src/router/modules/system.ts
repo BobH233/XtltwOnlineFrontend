@@ -31,6 +31,7 @@ const routes: Array<RouteRecordRaw> = [
         name: 'system_menu',
         meta: {
           title: '菜单权限管理',
+          permissions: ['FDY', 'TwAdmin'],
         },
         component: () => import('@/views/system/menu/menu.vue'),
       },

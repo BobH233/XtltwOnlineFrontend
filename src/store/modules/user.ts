@@ -87,11 +87,17 @@ export const useUserStore = defineStore({
               return;
             }
             const result = res;
-            const permissionList = [result.user.role];
+            const permissionList = [
+              {
+                value: result.user.role,
+                lable: '账户权限',
+              },
+            ];
+            result.user.permissions = permissionList;
             that.setUserInfo(result.user);
             that.setPermissions(permissionList);
             that.setAvatar('');
-            resolve(res);
+            resolve(result.user);
           })
           .catch((error) => {
             reject(error);
