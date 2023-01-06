@@ -99,7 +99,7 @@
         <n-dropdown trigger="hover" @select="avatarSelect" :options="avatarOptions">
           <div class="avatar">
             <n-avatar round>
-              {{ username }}
+              {{ nickname[0] }}
               <template #icon>
                 <UserOutlined />
               </template>
@@ -136,6 +136,8 @@
   import { AsideMenu } from '@/layout/components/Menu';
   import { useProjectSetting } from '@/hooks/setting/useProjectSetting';
   import { websiteConfig } from '@/config/website.config';
+  import { renderIcon } from '@/utils';
+  import { LogoutOutlined, SettingOutlined } from '@vicons/antd';
 
   export default defineComponent({
     name: 'PageHeader',
@@ -158,11 +160,12 @@
         useProjectSetting();
 
       const { username } = userStore?.info || {};
-
+      const { nickname } = userStore?.info || '';
       const drawerSetting = ref();
 
       const state = reactive({
         username: username || '',
+        nickname: nickname || '',
         fullscreenIcon: 'FullscreenOutlined',
         navMode: getNavMode,
         navTheme: getNavTheme,
@@ -275,34 +278,17 @@
       };
 
       // 图标列表
-      const iconList = [
-        {
-          icon: 'SearchOutlined',
-          tips: '搜索',
-        },
-        {
-          icon: 'GithubOutlined',
-          tips: 'github',
-          eventObject: {
-            click: () => window.open('https://github.com/jekip/naive-ui-admin'),
-          },
-        },
-        {
-          icon: 'LockOutlined',
-          tips: '锁屏',
-          eventObject: {
-            click: () => useLockscreen.setLock(true),
-          },
-        },
-      ];
+      const iconList = [];
       const avatarOptions = [
         {
           label: '个人设置',
           key: 1,
+          icon: renderIcon(SettingOutlined),
         },
         {
           label: '退出登录',
           key: 2,
+          icon: renderIcon(LogoutOutlined),
         },
       ];
 
