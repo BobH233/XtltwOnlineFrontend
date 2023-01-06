@@ -206,12 +206,20 @@ const transform: AxiosTransform = {
       if (err && err.includes('Network Error')) {
         $dialog.info({
           title: '网络异常',
-          content: '请检查您的网络连接是否正常',
+          content: '请检查您的网络连接是否正常,点击确定获取错误详情！',
           positiveText: '确定',
           //negativeText: '取消',
           closable: false,
           maskClosable: false,
-          onPositiveClick: () => {},
+          onPositiveClick: () => {
+            $dialog.info({
+              title: '异常详情',
+              content: JSON.stringify(error),
+              positiveText: '确定',
+              closable: false,
+              maskClosable: false,
+            });
+          },
           onNegativeClick: () => {},
         });
         return Promise.reject(error);
