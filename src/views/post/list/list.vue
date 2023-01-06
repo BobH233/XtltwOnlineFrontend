@@ -23,6 +23,7 @@
             添加角色
           </n-button>
           -->
+          <n-dynamic-tags v-model:value="model.tags" :render-tag="renderTag" />
         </template>
 
         <template #action>
@@ -37,21 +38,13 @@
   import { useUserStore } from '@/store/modules/user';
   import { getPosts } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
-  import { useDialog, useMessage } from 'naive-ui';
-  import { reactive, h } from 'vue';
+  import { useDialog, NDynamicTags, NForm, NTag, FormRules } from 'naive-ui';
+  import { reactive, h, ref, unref } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
-  import { columns } from './columns';
-
+  import { columns, PostStatusMap } from './columns';
   const userStore = useUserStore();
   const Role = userStore.getRole;
-  const message = useMessage();
   const dialog = useDialog();
-  const role_descriptions = {
-    FDY: '辅导员: 查看您负责的所有推送请求并进行搜索、过滤、操作。',
-    TwAdmin: '团委管理员: 查看系统中所有的推送并对辅导员已经通过的文章进行操作。',
-    TZB: '团支部: 查看你的团支部已经发送的推送申请状态，并进行修改。',
-    TwMember: '团委干事: 查看分配给你的推送任务，并进行修改，然后更新状态。',
-  };
   let queryFilter = [
     'FDYCheck',
     'ToRevise',
@@ -61,6 +54,51 @@
     'Sending',
     'Sended',
   ];
+  let ChineseTagMap = {};
+  let ChineseFilter: string[] = [];
+  const actionRef = ref<any>();
+  for (let i = 0; i < queryFilter.length; i++) {
+    ChineseTagMap[PostStatusMap[queryFilter[i]].tips] = queryFilter[i];
+    ChineseFilter.push(PostStatusMap[queryFilter[i]].tips);
+  }
+  const model = ref({
+    tags: ChineseFilter,
+  });
+  const refreshList = () => {
+    console.log(unref(model).tags);
+    let curTags = unref(model).tags;
+    queryFilter = [];
+    for (let i = 0; i < curTags.length; i++) {
+      queryFilter.push(ChineseTagMap[curTags[i]]);
+    }
+    actionRef.value.reload();
+  };
+
+  const renderTag = (tag: string, index: number) => {
+    return h(
+      NTag,
+      {
+        type: PostStatusMap[ChineseTagMap[tag]].type,
+        closable: true,
+        onClose: () => {
+          model.value.tags.splice(index, 1);
+          refreshList();
+        },
+      },
+      {
+        default: () => tag,
+        icon: PostStatusMap[ChineseTagMap[tag]].icon,
+      }
+    );
+  };
+
+  const role_descriptions = {
+    FDY: '辅导员: 查看您负责的所有推送请求并进行搜索、过滤、操作。',
+    TwAdmin: '团委管理员: 查看系统中所有的推送并对辅导员已经通过的文章进行操作。',
+    TZB: '团支部: 查看你的团支部已经发送的推送申请状态，并进行修改。',
+    TwMember: '团委干事: 查看分配给你的推送任务，并进行修改，然后更新状态。',
+  };
+
   const loadDataTable = async (res: any) => {
     // 载入表格数据的函数，res表示页数和每页个数
     try {
@@ -89,7 +127,7 @@
         positiveText: '确定',
       });
     }
-  }
+  };
 
   function onCheckedRow(rowKeys: any[]) {
     console.log(rowKeys);

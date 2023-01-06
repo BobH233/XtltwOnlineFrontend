@@ -11,7 +11,7 @@ import {
 } from '@vicons/antd';
 import { renderIcon } from '@/utils';
 
-const PostStatusMap = {
+export const PostStatusMap = {
   FDYCheck: {
     type: 'warning',
     icon: renderIcon(MehFilled),
@@ -75,7 +75,7 @@ export const columns = [
           icon: PostStatusMap[row.PostStatus].icon,
         }
       );
-    }
+    },
   },
   {
     title: '发出日期',
