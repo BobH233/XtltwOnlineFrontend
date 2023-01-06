@@ -131,7 +131,6 @@
   import { NDialogProvider, useDialog, useMessage } from 'naive-ui';
   import { TABS_ROUTES } from '@/store/mutation-types';
   import { useUserStore } from '@/store/modules/user';
-  import { useLockscreenStore } from '@/store/modules/lockscreen';
   import ProjectSetting from './ProjectSetting.vue';
   import { AsideMenu } from '@/layout/components/Menu';
   import { useProjectSetting } from '@/hooks/setting/useProjectSetting';
@@ -152,7 +151,6 @@
     },
     setup(props) {
       const userStore = useUserStore();
-      const useLockscreen = useLockscreenStore();
       const message = useMessage();
       window['$message'] = message;
       const dialog = useDialog();
@@ -281,13 +279,18 @@
       const iconList = [];
       const avatarOptions = [
         {
-          label: '个人设置',
+          label: nickname,
           key: 1,
+          disabled: true,
+        },
+        {
+          label: '个人设置',
+          key: 2,
           icon: renderIcon(SettingOutlined),
         },
         {
           label: '退出登录',
-          key: 2,
+          key: 3,
           icon: renderIcon(LogoutOutlined),
         },
       ];

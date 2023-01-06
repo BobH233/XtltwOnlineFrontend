@@ -1,6 +1,6 @@
 import { http } from '@/utils/http/axios';
 import { MapMessage } from '../messageMap';
-import { RespHook } from '../respHook'
+import { RespHook } from '../respHook';
 
 const API_URL = import.meta.env.VITE_BOBH_API_URL;
 
@@ -24,6 +24,8 @@ export interface UserinfoResponseModel<T = any> {
   message: string;
   user: T;
 }
+
+const UserInfoCache = {};
 
 export function login(params): Promise<LoginResponseModel> {
   return new Promise((resolve, reject) => {
@@ -92,4 +94,36 @@ export function logout(): Promise<LogoutResponseModel> {
         reject(err);
       });
   });
+}
+
+export function getOtherUserInfo(userId: string): Promise<UserinfoResponseModel> {
+  if (UserInfoCache.hasOwnProperty(userId)) {
+    // console.log('Hit cache: ', UserInfoCache[userId]);
+    return Promise.resolve(UserInfoCache[userId]);
+  } else {
+    return new Promise((resolve, reject) => {
+      http
+        .request<UserinfoResponseModel>(
+          {
+            url: API_URL + '/api/user/userinfo/' + userId,
+            method: 'GET',
+          },
+          {
+            isTransformResponse: false,
+          }
+        )
+        .then((resp) => {
+          resp['map_message'] = MapMessage(resp.message);
+          RespHook(resp, () => {
+            if (resp.code == 200) {
+              UserInfoCache[userId] = resp;
+            }
+            resolve(resp);
+          });
+        })
+        .catch((err) => {
+          reject(err);
+        });
+    });
+  }
 }

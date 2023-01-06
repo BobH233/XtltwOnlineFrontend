@@ -14,6 +14,7 @@ export interface IUserState {
   avatar: string;
   permissions: any[];
   info: any;
+  Role: string;
 }
 
 export const useUserStore = defineStore({
@@ -25,6 +26,7 @@ export const useUserStore = defineStore({
     avatar: '',
     permissions: [],
     info: storage.get(CURRENT_USER, {}),
+    Role: '',
   }),
   getters: {
     getToken(): string {
@@ -42,6 +44,9 @@ export const useUserStore = defineStore({
     getUserInfo(): object {
       return this.info;
     },
+    getRole(): string {
+      return this.Role;
+    },
   },
   actions: {
     setToken(token: string) {
@@ -52,6 +57,9 @@ export const useUserStore = defineStore({
     },
     setPermissions(permissions) {
       this.permissions = permissions;
+      if (Array.isArray(permissions) && permissions.length >= 1) {
+        this.Role = permissions[0].value;
+      }
     },
     setUserInfo(info) {
       this.info = info;

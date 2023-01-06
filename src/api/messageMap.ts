@@ -5,6 +5,7 @@ const MessageMap = {
   'invalid api router.': '非法api路由!',
   'Logout successfully!': '成功登出账号!',
   'Query successfully!': '查询成功!',
+  "You don't have permission to call this api.": '你无权调用本API',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {
