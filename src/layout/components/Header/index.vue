@@ -154,7 +154,7 @@
       const userStore = useUserStore();
       const useLockscreen = useLockscreenStore();
       const message = useMessage();
-      window.$message = message;
+      window['$message'] = message;
       const dialog = useDialog();
       const { getNavMode, getNavTheme, getHeaderSetting, getMenuSetting, getCrumbsSetting } =
         useProjectSetting();
@@ -196,9 +196,9 @@
       });
 
       const router = useRouter();
-      window.$router = router;
+      window['$router'] = router;
       const route = useRoute();
-      window.$route = route;
+      window['$route'] = route;
 
       const generator: any = (routerMap) => {
         return routerMap.map((item) => {

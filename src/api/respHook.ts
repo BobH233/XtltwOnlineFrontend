@@ -11,9 +11,9 @@ let route;
 function DoLogout() {
   if (router == undefined) {
     userStore = useUserStore();
-    message = window.$message;
-    router = window.$router;
-    route = window.$route;
+    message = window['$message'];
+    router = window['$router'];
+    route = window['$route'];
   }
   userStore.logout().then(() => {
     message.error('身份信息失效!');
@@ -36,7 +36,7 @@ export function RespHook(resp, next) {
     (resp.message == 'Expired session token or invalid session' ||
       resp.message == 'Unauthorized token')
   ) {
-    setTimeout(DoLogout, 100);
+    setTimeout(DoLogout, 1000);
     next();
   } else {
     next();
