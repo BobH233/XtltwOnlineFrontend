@@ -53,7 +53,7 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
           title: '工作台_TwAdmin',
           keepAlive: true,
-          permissions: ['FDY'],
+          permissions: ['TwAdmin'],
         },
         component: () => import('@/views/dashboard/workplace/workplace.vue'),
       },
