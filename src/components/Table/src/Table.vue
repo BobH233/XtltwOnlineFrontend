@@ -146,7 +146,7 @@
         },
         emit
       );
-      defineExpose({ reload });
+      // defineExpose({ reload });
 
       const { getPageColumns, setColumns, getColumns, getCacheColumns, setCacheColumnsField } =
         useColumns(getProps);
