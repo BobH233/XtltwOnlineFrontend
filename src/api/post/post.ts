@@ -32,6 +32,7 @@ export function getPosts(
       code: 401,
       message: 'Invalid Permission string!',
       map_string: '非法的权限请求，联系管理员',
+      page: 0,
       data: [],
     });
   }
