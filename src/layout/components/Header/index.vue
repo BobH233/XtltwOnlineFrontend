@@ -285,12 +285,12 @@
         },
         {
           label: '个人设置',
-          key: 2,
+          key: 3,
           icon: renderIcon(SettingOutlined),
         },
         {
           label: '退出登录',
-          key: 3,
+          key: 2,
           icon: renderIcon(LogoutOutlined),
         },
       ];
