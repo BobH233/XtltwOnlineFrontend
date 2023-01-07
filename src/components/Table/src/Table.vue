@@ -184,7 +184,6 @@
       //组装表格信息
       const getBindValues = computed(() => {
         const tableData = unref(getDataSourceRef);
-        const maxHeight = tableData.length ? `${unref(deviceHeight)}px` : 'auto';
         return {
           ...unref(getProps),
           loading: unref(getLoading),
@@ -193,7 +192,7 @@
           data: tableData,
           size: unref(getTableSize),
           remote: true,
-          'max-height': maxHeight,
+          'max-height': 'auto',
         };
       });
 
