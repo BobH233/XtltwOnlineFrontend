@@ -13,6 +13,8 @@ const MessageMap = {
   'Successfully delete all sessions!': '成功下线所有的会话!',
   'Delete post successfully!': '成功删除申请!',
   'This post could not be deleted!': '这篇申请不能被删除!',
+  success: '成功',
+  'Delete successfully!': '删除成功!',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

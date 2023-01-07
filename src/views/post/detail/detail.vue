@@ -1,5 +1,7 @@
 <template>
-  <h1>postId: {{ postId }}</h1>
+  <div
+    ><h1>postId: {{ postId }}</h1></div
+  >
 </template>
 
 <script lang="ts" setup>

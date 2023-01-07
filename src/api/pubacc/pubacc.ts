@@ -4,56 +4,29 @@ import { RespHook } from '../respHook';
 
 const API_URL = import.meta.env.VITE_BOBH_API_URL;
 
-export interface UserPostsResponseModel<T = any> {
+export interface PubaccListResponseModel<T = any> {
   code: number;
   message: string;
-  page: number;
   data: T[];
 }
 
-export interface getPostsParams {
-  page: number; //第几页数据
-  PerPage: number; //每一页多少数据
-  filter: string; //过滤要查询的数据JSON数据
-}
-
-export interface NewPostResponseModel {
-  code: number;
-  message: string;
-  postId: string;
-}
-
-export interface DeletePostResponseModel {
+export interface DeletePubaccResponseModel {
   code: number;
   message: string;
 }
 
-export function getPosts(
-  userPermission: string,
-  params: getPostsParams
-): Promise<UserPostsResponseModel> {
-  const apiUrl = {
-    FDY: API_URL + '/api/post/fdy/getPosts',
-    TZB: API_URL + '/api/post/tzb/getPosts',
-    TwAdmin: API_URL + '/api/post/twadmin/getPosts',
-    TwMember: API_URL + '/api/post/tw/getPosts',
-  };
-  if (!apiUrl.hasOwnProperty(userPermission)) {
-    return Promise.resolve({
-      code: 401,
-      message: 'Invalid Permission string!',
-      map_string: '非法的权限请求，联系管理员',
-      page: 0,
-      data: [],
-    });
-  }
+export interface AddPubaccResponseModel {
+  code: number;
+  message: string;
+}
+
+export function getPubaccs(): Promise<PubaccListResponseModel> {
   return new Promise((resolve, reject) => {
     http
-      .request<UserPostsResponseModel>(
+      .request<PubaccListResponseModel>(
         {
-          url: apiUrl[userPermission],
-          method: 'POST',
-          params,
+          url: API_URL + '/api/pubacc/get',
+          method: 'GET',
         },
         {
           isTransformResponse: false,
@@ -71,14 +44,14 @@ export function getPosts(
   });
 }
 
-export function sendNewPost(params): Promise<NewPostResponseModel> {
+export function deletePubaccs(id): Promise<DeletePubaccResponseModel> {
   return new Promise((resolve, reject) => {
     http
-      .request<NewPostResponseModel>(
+      .request<DeletePubaccResponseModel>(
         {
-          url: API_URL + '/api/post/tzb/newPost',
+          url: API_URL + '/api/pubacc/remove',
           method: 'POST',
-          params,
+          params: { pubaccId: id },
         },
         {
           isTransformResponse: false,
@@ -96,12 +69,12 @@ export function sendNewPost(params): Promise<NewPostResponseModel> {
   });
 }
 
-export function deletePost(params): Promise<DeletePostResponseModel> {
+export function addPubaccs(params): Promise<AddPubaccResponseModel> {
   return new Promise((resolve, reject) => {
     http
-      .request<DeletePostResponseModel>(
+      .request<AddPubaccResponseModel>(
         {
-          url: API_URL + '/api/post/tzb/deletePost',
+          url: API_URL + '/api/pubacc/add',
           method: 'POST',
           params,
         },

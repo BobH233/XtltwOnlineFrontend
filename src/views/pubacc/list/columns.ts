@@ -1,6 +1,6 @@
 import { h } from 'vue';
 import { NTag } from 'naive-ui';
-import { StarFilled, UserOutlined } from '@vicons/antd';
+import { SmileFilled, UserOutlined, ExclamationCircleFilled } from '@vicons/antd';
 import { renderIcon } from '@/utils';
 
 function dateFormat(fmt, date) {
@@ -25,7 +25,7 @@ function dateFormat(fmt, date) {
 
 export const columns = [
   {
-    title: '秀米用户名',
+    title: '用户名',
     key: 'XiumiUsername',
     render(row) {
       return h(
@@ -34,42 +34,46 @@ export const columns = [
           type: 'success',
         },
         {
-          default: row.XiumiUsername,
+          default: row.username,
           icon: renderIcon(UserOutlined),
         }
       );
     },
   },
   {
-    title: '秀米昵称',
-    key: 'XiumiNickname',
-    render(row) {
-      const uaObj = JSON.parse(row.UserInfo);
-      return uaObj.user.nickname;
-    },
+    title: '描述',
+    key: 'description',
   },
   {
-    title: '最后有效时间',
-    key: 'LastUpdateTime',
+    title: '添加日期',
+    key: 'AddDate',
     render(row) {
-      const lastDate = new Date(parseInt(row.lastUpdateTime));
+      const lastDate = new Date(parseInt(row.AddDate));
       return dateFormat('YYYY-mm-dd HH:MM:SS', lastDate);
     },
   },
   {
-    title: '状态',
-    key: 'Status',
-    render(_row) {
+    title: '满存状态',
+    key: 'LastIsFull',
+    render(row) {
       return h(
         NTag,
         {
-          type: 'success',
+          type: row.LastIsFull ? 'error' : 'success',
         },
         {
-          default: '在线',
-          icon: renderIcon(StarFilled),
+          default: row.LastIsFull ? '已满' : '空闲',
+          icon: row.LastIsFull ? renderIcon(ExclamationCircleFilled) : renderIcon(SmileFilled),
         }
       );
+    },
+  },
+  {
+    title: '最后转存日期',
+    key: 'LastSaveDate',
+    render(row) {
+      const lastDate = new Date(parseInt(row.LastSaveDate));
+      return dateFormat('YYYY-mm-dd HH:MM:SS', lastDate);
     },
   },
 ];

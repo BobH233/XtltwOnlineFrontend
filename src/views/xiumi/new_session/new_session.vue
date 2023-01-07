@@ -108,6 +108,7 @@
       } else {
         if (res.detail.is_wrong_account) {
           message.error('秀米账号或密码错误!');
+          refreshCaptcha();
         } else if (res.detail.is_wrong_captcha) {
           message.error('验证码错误!');
           refreshCaptcha();
