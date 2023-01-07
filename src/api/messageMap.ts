@@ -15,6 +15,8 @@ const MessageMap = {
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {
     return MessageMap[message];
+  } else if (message.indexOf('internal code error.') != -1) {
+    return message.replace('internal code error.', '内部代码错误');
   } else {
     return message;
   }
