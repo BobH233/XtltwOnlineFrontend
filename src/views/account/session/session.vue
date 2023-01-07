@@ -1,30 +1,32 @@
 <template>
-  <n-card :bordered="false" title="会话管理">
-    在这里看到你登陆的其他设备，IP地址，并进行操作。
-  </n-card>
-  <n-card :bordered="false" class="mt-4 proCard">
-    <BasicTable
-      :columns="columns"
-      :request="loadDataTable"
-      :row-key="(row) => row.id"
-      ref="actionRef"
-      :actionColumn="actionColumn"
-    >
-      <template #tableTitle>
-        <n-button type="error" @click="doDeleteAllSession">
-          <template #icon>
-            <n-icon>
-              <DeleteOutlined />
-            </n-icon>
-          </template>
-          下线所有会话
-        </n-button>
-      </template>
-      <template #action>
-        <TableAction />
-      </template>
-    </BasicTable>
-  </n-card>
+  <div>
+    <n-card :bordered="false" title="会话管理">
+      在这里看到你登陆的其他设备，IP地址，并进行操作。
+    </n-card>
+    <n-card :bordered="false" class="mt-4 proCard">
+      <BasicTable
+        :columns="columns"
+        :request="loadDataTable"
+        :row-key="(row) => row.id"
+        ref="actionRef"
+        :actionColumn="actionColumn"
+      >
+        <template #tableTitle>
+          <n-button type="error" @click="doDeleteAllSession">
+            <template #icon>
+              <n-icon>
+                <DeleteOutlined />
+              </n-icon>
+            </template>
+            下线所有会话
+          </n-button>
+        </template>
+        <template #action>
+          <TableAction />
+        </template>
+      </BasicTable>
+    </n-card>
+  </div>
 </template>
 
 <script lang="ts" setup>
