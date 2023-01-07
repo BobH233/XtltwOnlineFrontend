@@ -36,6 +36,12 @@ export interface SessionsResponseModel<T = any> {
   data: T[];
 }
 
+export interface UserListResponseModel<T = any> {
+  code: number;
+  message: string;
+  data: T[];
+}
+
 const UserInfoCache = {};
 
 export function login(params): Promise<LoginResponseModel> {
@@ -220,6 +226,31 @@ export function deleteAllMySession(): Promise<SessionsResponseModel> {
         {
           url: API_URL + '/api/user/deleteAllSessions',
           method: 'POST',
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function getUserLists(filter): Promise<UserListResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<UserListResponseModel>(
+        {
+          url: API_URL + '/api/user/userList',
+          method: 'POST',
+          params: { filter },
         },
         {
           isTransformResponse: false,

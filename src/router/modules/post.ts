@@ -3,7 +3,7 @@
 */
 import { RouteRecordRaw } from 'vue-router';
 import { Layout } from '@/router/constant';
-import { UnorderedListOutlined } from '@vicons/antd';
+import { ClockCircleFilled, PlusCircleFilled, UnorderedListOutlined } from '@vicons/antd';
 import { renderIcon } from '@/utils/index';
 
 /**
@@ -23,11 +23,22 @@ const routes: Array<RouteRecordRaw> = [
     name: 'PostList',
     component: Layout,
     meta: {
-      title: '文章',
-      icon: renderIcon(UnorderedListOutlined),
+      title: '审核申请',
+      icon: renderIcon(ClockCircleFilled),
       permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
     },
     children: [
+      {
+        path: 'new',
+        name: 'post_new',
+        meta: {
+          title: '新建申请',
+          icon: renderIcon(PlusCircleFilled),
+          permissions: ['TZB'],
+          keepAlive: true,
+        },
+        component: () => import('@/views/post/new_post/new_post.vue'),
+      },
       {
         path: 'list',
         name: 'post_list',

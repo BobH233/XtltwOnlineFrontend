@@ -17,6 +17,12 @@ export interface getPostsParams {
   filter: string; //过滤要查询的数据JSON数据
 }
 
+export interface NewPostResponseModel {
+  code: number;
+  message: string;
+  postId: string;
+}
+
 export function getPosts(
   userPermission: string,
   params: getPostsParams
@@ -41,6 +47,31 @@ export function getPosts(
       .request<UserPostsResponseModel>(
         {
           url: apiUrl[userPermission],
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function sendNewPost(params): Promise<NewPostResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<NewPostResponseModel>(
+        {
+          url: API_URL + '/api/post/tzb/newPost',
           method: 'POST',
           params,
         },
