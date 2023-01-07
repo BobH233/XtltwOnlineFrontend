@@ -13,17 +13,13 @@
         @update:checked-row-keys="onCheckedRow"
       >
         <template #tableTitle>
-          <!--
-          <n-button type="primary">
-            <template #icon>
-              <n-icon>
-                <PlusOutlined />
-              </n-icon>
-            </template>
-            添加角色
-          </n-button>
-          -->
-          <n-dynamic-tags v-model:value="model.tags" :render-tag="renderTag" />
+          <n-select
+            v-model:value="TagValue"
+            multiple
+            :options="TagOptions"
+            @update:value="handleUpdateTags"
+            :render-tag="renderTag"
+          />
         </template>
 
         <template #action>
@@ -38,10 +34,13 @@
   import { useUserStore } from '@/store/modules/user';
   import { getPosts } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
-  import { useDialog, NDynamicTags, NForm, NTag, FormRules } from 'naive-ui';
+  import { useDialog, NDynamicTags, NTag, NSelect } from 'naive-ui';
   import { reactive, h, ref, unref } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns, PostStatusMap } from './columns';
+  import { PlusCircleFilled } from '@vicons/antd';
+  import { SelectOption } from 'naive-ui/lib';
+
   const userStore = useUserStore();
   const Role = userStore.getRole;
   const dialog = useDialog();
@@ -54,44 +53,41 @@
     'Sending',
     'Sended',
   ];
-  let ChineseTagMap = {};
-  let ChineseFilter: string[] = [];
+  const TagValue = ref(queryFilter);
+  const TagOptions: any = [];
   const actionRef = ref<any>();
-  for (let i = 0; i < queryFilter.length; i++) {
-    ChineseTagMap[PostStatusMap[queryFilter[i]].tips] = queryFilter[i];
-    ChineseFilter.push(PostStatusMap[queryFilter[i]].tips);
-  }
-  const model = ref({
-    tags: ChineseFilter,
-  });
-  const refreshList = () => {
-    console.log(unref(model).tags);
-    let curTags = unref(model).tags;
-    queryFilter = [];
-    for (let i = 0; i < curTags.length; i++) {
-      queryFilter.push(ChineseTagMap[curTags[i]]);
-    }
-    actionRef.value.reload();
-  };
 
-  const renderTag = (tag: string, index: number) => {
+  for (let i = 0; i < queryFilter.length; i++) {
+    TagOptions.push({
+      label: PostStatusMap[queryFilter[i]].tips,
+      value: queryFilter[i],
+    });
+  }
+
+  function handleUpdateTags(value: string[], option: SelectOption) {
+    actionRef.value.reload();
+  }
+
+  function renderTag({ option, handleClose }) {
     return h(
       NTag,
       {
-        type: PostStatusMap[ChineseTagMap[tag]].type,
+        type: PostStatusMap[option.value].type,
         closable: true,
-        onClose: () => {
-          model.value.tags.splice(index, 1);
-          refreshList();
+        onMousedown: (e: FocusEvent) => {
+          e.preventDefault();
+        },
+        onClose: (e: MouseEvent) => {
+          e.stopPropagation();
+          handleClose();
         },
       },
       {
-        default: () => tag,
-        icon: PostStatusMap[ChineseTagMap[tag]].icon,
+        default: () => option.label,
+        icon: PostStatusMap[option.value].icon,
       }
     );
-  };
-
+  }
   const role_descriptions = {
     FDY: '辅导员: 查看您负责的所有推送请求并进行搜索、过滤、操作。',
     TwAdmin: '团委管理员: 查看系统中所有的推送并对辅导员已经通过的文章进行操作。',
@@ -105,7 +101,7 @@
       let rawTableData = await getPosts(Role, {
         page: res.page - 1,
         PerPage: res.pageSize,
-        filter: JSON.stringify(queryFilter),
+        filter: JSON.stringify(TagValue.value),
       });
       for (let i = 0; i < rawTableData.data.length; i++) {
         const ownerId = rawTableData.data[i].OwnerId;
