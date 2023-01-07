@@ -34,16 +34,17 @@
   import { useUserStore } from '@/store/modules/user';
   import { getPosts } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
-  import { useDialog, NDynamicTags, NTag, NSelect } from 'naive-ui';
-  import { reactive, h, ref, unref } from 'vue';
+  import { useDialog, NTag, NSelect } from 'naive-ui';
+  import { reactive, h, ref } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns, PostStatusMap } from './columns';
-  import { PlusCircleFilled } from '@vicons/antd';
   import { SelectOption } from 'naive-ui/lib';
+  import { useRouter } from 'vue-router';
 
   const userStore = useUserStore();
   const Role = userStore.getRole;
   const dialog = useDialog();
+  const router = useRouter();
   let queryFilter = [
     'FDYCheck',
     'ToRevise',
@@ -64,7 +65,7 @@
     });
   }
 
-  function handleUpdateTags(value: string[], option: SelectOption) {
+  function handleUpdateTags(_value: string[], _option: SelectOption) {
     actionRef.value.reload();
   }
 
@@ -140,17 +141,31 @@
         actions: [
           {
             label: '查看申请',
-            onClick: () => {
-              alert(JSON.stringify(record));
-            },
+            onClick: handleViewDetail.bind(null, record),
             ifShow: () => {
               return true;
+            },
+          },
+          {
+            label: '撤回',
+            onClick: () => {},
+            ifShow: () => {
+              return (
+                Role == 'TZB' &&
+                (record.PostStatus == 'FDYCheck' ||
+                  record.PostStatus == 'ToRevise' ||
+                  record.PostStatus == 'FDYPass')
+              );
             },
           },
         ],
       });
     },
   });
+
+  function handleViewDetail(record: Recordable) {
+    router.push({ name: 'post_detail', params: { id: record._id } });
+  }
 </script>
 
 <style lang="less" scoped></style>
