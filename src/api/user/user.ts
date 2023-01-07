@@ -30,6 +30,12 @@ export interface ChangePasswordResponseModel {
   message: string;
 }
 
+export interface SessionsResponseModel<T = any> {
+  code: number;
+  message: string;
+  data: T[];
+}
+
 const UserInfoCache = {};
 
 export function login(params): Promise<LoginResponseModel> {
@@ -141,6 +147,79 @@ export function changeMyPassword(params: any): Promise<ChangePasswordResponseMod
           url: API_URL + '/api/user/changeMyPassword',
           method: 'POST',
           params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function getMySessions(): Promise<SessionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<SessionsResponseModel>(
+        {
+          url: API_URL + '/api/user/getSessions',
+          method: 'GET',
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function deleteMySession(sessionId): Promise<SessionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<SessionsResponseModel>(
+        {
+          url: API_URL + '/api/user/deleteSession',
+          method: 'POST',
+          params: { sessionId },
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function deleteAllMySession(): Promise<SessionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<SessionsResponseModel>(
+        {
+          url: API_URL + '/api/user/deleteAllSessions',
+          method: 'POST',
         },
         {
           isTransformResponse: false,
