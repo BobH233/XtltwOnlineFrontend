@@ -39,6 +39,16 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/post/list/list.vue'),
       },
+      {
+        path: 'detail/:id?',
+        name: 'post_detail',
+        meta: {
+          title: '申请详情',
+          hidden: true,
+          keepAlive: true,
+        },
+        component: () => import('@/views/post/detail/detail.vue'),
+      },
     ],
   },
 ];
