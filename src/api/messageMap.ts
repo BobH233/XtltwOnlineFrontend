@@ -6,6 +6,8 @@ const MessageMap = {
   'Logout successfully!': '成功登出账号!',
   'Query successfully!': '查询成功!',
   "You don't have permission to call this api.": '你无权调用本API',
+  'Successfully change the password': '修改密码成功!',
+  'Old password is wrong!': '原密码错误!',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

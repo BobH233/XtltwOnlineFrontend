@@ -25,6 +25,11 @@ export interface UserinfoResponseModel<T = any> {
   user: T;
 }
 
+export interface ChangePasswordResponseModel {
+  code: number;
+  message: string;
+}
+
 const UserInfoCache = {};
 
 export function login(params): Promise<LoginResponseModel> {
@@ -126,4 +131,29 @@ export function getOtherUserInfo(userId: string): Promise<UserinfoResponseModel>
         });
     });
   }
+}
+
+export function changeMyPassword(params: any): Promise<ChangePasswordResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<ChangePasswordResponseModel>(
+        {
+          url: API_URL + '/api/user/changeMyPassword',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
 }
