@@ -40,7 +40,7 @@
   const dialog = useDialog();
   const message = useMessage();
   const actionRef = ref<any>();
-  const loadDataTable = async (res: any) => {
+  const loadDataTable = async (_res: any) => {
     // 载入表格数据的函数，res表示页数和每页个数
     try {
       let rawTableData = await getMySessions();

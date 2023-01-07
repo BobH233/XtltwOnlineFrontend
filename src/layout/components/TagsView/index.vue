@@ -324,6 +324,8 @@
         updateNavScroll();
       };
 
+      window['$removeTab'] = removeTab;
+
       // 刷新页面
       const reloadPage = () => {
         delKeepAliveCompName();

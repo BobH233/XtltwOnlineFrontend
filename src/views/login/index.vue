@@ -79,7 +79,7 @@
   const LOGIN_NAME = PageEnum.BASE_LOGIN_NAME;
 
   const formInline = reactive({
-    username: 'FDY1',
+    username: 'TZB1',
     password: 'publicpassword1',
   });
 
