@@ -180,7 +180,7 @@
             label: '转存',
             onClick: () => {},
             ifShow: () => {
-              return record.PostStatus == 'FDYPass';
+              return Role == 'TZB' && record.PostStatus == 'FDYPass';
             },
           },
         ],
