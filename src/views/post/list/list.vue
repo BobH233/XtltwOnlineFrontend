@@ -32,9 +32,9 @@
 
 <script lang="ts" setup>
   import { useUserStore } from '@/store/modules/user';
-  import { getPosts } from '@/api/post/post';
+  import { getPosts, deletePost } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
-  import { useDialog, NTag, NSelect } from 'naive-ui';
+  import { useDialog, NTag, NSelect, useMessage } from 'naive-ui';
   import { reactive, h, ref } from 'vue';
   import { BasicTable, TableAction } from '@/components/Table';
   import { columns, PostStatusMap } from './columns';
@@ -44,6 +44,7 @@
   const userStore = useUserStore();
   const Role = userStore.getRole;
   const dialog = useDialog();
+  const message = useMessage();
   const router = useRouter();
   let queryFilter = [
     'FDYCheck',
@@ -148,7 +149,24 @@
           },
           {
             label: '撤回',
-            onClick: () => {},
+            onClick: () => {
+              dialog.warning({
+                title: '确认撤回申请',
+                content: '你确认要撤回这篇申请吗？撤回操作不可逆转！',
+                positiveText: '确认撤回',
+                negativeText: '取消',
+                onPositiveClick: () => {
+                  deletePost({ postId: record._id }).then((res) => {
+                    if (res.code == 200) {
+                      message.success(res['map_message']);
+                      actionRef.value.reload();
+                    } else {
+                      message.error(res['map_message']);
+                    }
+                  });
+                },
+              });
+            },
             ifShow: () => {
               return (
                 Role == 'TZB' &&
@@ -156,6 +174,13 @@
                   record.PostStatus == 'ToRevise' ||
                   record.PostStatus == 'FDYPass')
               );
+            },
+          },
+          {
+            label: '转存',
+            onClick: () => {},
+            ifShow: () => {
+              return record.PostStatus == 'FDYPass';
             },
           },
         ],

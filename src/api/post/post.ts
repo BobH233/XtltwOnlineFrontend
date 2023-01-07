@@ -23,6 +23,11 @@ export interface NewPostResponseModel {
   postId: string;
 }
 
+export interface DeletePostResponseModel {
+  code: number;
+  message: string;
+}
+
 export function getPosts(
   userPermission: string,
   params: getPostsParams
@@ -90,3 +95,29 @@ export function sendNewPost(params): Promise<NewPostResponseModel> {
       });
   });
 }
+
+export function deletePost(params): Promise<DeletePostResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<DeletePostResponseModel>(
+        {
+          url: API_URL + '/api/post/tzb/deletePost',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+

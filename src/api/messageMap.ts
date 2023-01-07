@@ -11,6 +11,8 @@ const MessageMap = {
   'Successfully delete the session!': '成功删除会话!',
   'No matching sessionId!': '没有找到对应的会话id!',
   'Successfully delete all sessions!': '成功下线所有的会话!',
+  'Delete post successfully!': '成功删除申请!',
+  'This post could not be deleted!': '这篇申请不能被删除!',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {
