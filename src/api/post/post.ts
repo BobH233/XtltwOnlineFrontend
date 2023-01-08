@@ -28,6 +28,53 @@ export interface DeletePostResponseModel {
   message: string;
 }
 
+export interface TimelineItem {
+  status: string;
+  UpdateTime: string;
+  _id: string;
+}
+
+export interface CommentItem {
+  _id: string;
+  PostId: string;
+  OwnerId: string;
+  CommentContent: string;
+  CommentDate: string;
+}
+
+export interface PostDetailResponseModel {
+  code: number;
+  message: string;
+  post_data: {
+    _id: string;
+    OwnerId: string;
+    Title: string;
+    FDYInCharge: string;
+    TwMemberInCharge: string;
+    PostStatus: string;
+    TimeLine: TimelineItem[] | any;
+    XiumiSessionId: string;
+    XiumiPaperInfo: string;
+    TZBForwardPaperInfo: string;
+    TZBForwardPaperAccountId: string;
+    pubaccPaperId: string;
+    TWArrangeForwardPaperInfo: string;
+    TWArrangeForwardSessionId: string;
+    TWForwardPaperInfo: string;
+    SendingDate: string;
+  };
+  comment_data: CommentItem[];
+}
+
+export interface SendCommentResponseModel {
+  code: number;
+  message: string;
+}
+export interface requireRecheckResponseModel {
+  code: number;
+  message: string;
+}
+
 export function getPosts(
   userPermission: string,
   params: getPostsParams
@@ -52,6 +99,74 @@ export function getPosts(
       .request<UserPostsResponseModel>(
         {
           url: apiUrl[userPermission],
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function sendComment(
+  userPermission: string,
+  params: any
+): Promise<SendCommentResponseModel> {
+  const apiUrl = {
+    FDY: API_URL + '/api/post/fdy/comment',
+    TZB: API_URL + '/api/post/tzb/comment',
+    TwAdmin: API_URL + '/api/post/tw/comment',
+    TwMember: API_URL + '/api/post/tw/comment',
+  };
+  if (!apiUrl.hasOwnProperty(userPermission)) {
+    return Promise.resolve({
+      code: 401,
+      message: 'Invalid Permission string!',
+      map_string: '非法的权限请求，联系管理员',
+      page: 0,
+      data: [],
+    });
+  }
+  return new Promise((resolve, reject) => {
+    http
+      .request<SendCommentResponseModel>(
+        {
+          url: apiUrl[userPermission],
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function requireRevise(params: any): Promise<SendCommentResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<SendCommentResponseModel>(
+        {
+          url: API_URL + '/api/post/fdy/requireRevise',
           method: 'POST',
           params,
         },
@@ -104,6 +219,79 @@ export function deletePost(params): Promise<DeletePostResponseModel> {
           url: API_URL + '/api/post/tzb/deletePost',
           method: 'POST',
           params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function getPostDetail(postId): Promise<PostDetailResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<PostDetailResponseModel>(
+        {
+          url: API_URL + `/api/post/details/${postId}`,
+          method: 'GET',
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function requireRecheck(params: any): Promise<requireRecheckResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<requireRecheckResponseModel>(
+        {
+          url: API_URL + '/api/post/tzb/requireRecheck',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function passPost(postId): Promise<requireRecheckResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<requireRecheckResponseModel>(
+        {
+          url: API_URL + '/api/post/fdy/pass',
+          method: 'POST',
+          params: { postId },
         },
         {
           isTransformResponse: false,

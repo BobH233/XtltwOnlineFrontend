@@ -1,11 +1,578 @@
 <template>
-  <div
-    ><h1>postId: {{ postId }}</h1></div
-  >
+  <div>
+    <div class="n-layout-page-header" v-show="notFound">
+      <n-card :bordered="false">
+        <template #header>
+          <n-icon size="30" color="#ff7d67">
+            <CloseCircleFilled />
+          </n-icon>
+          无法找到申请
+        </template>
+        检查你是否有权限访问这篇申请，或者该申请已被撤回!
+      </n-card>
+    </div>
+    <div class="cardMargin" v-show="!notFound">
+      <n-card :bordered="false">
+        <template #header>
+          <n-skeleton v-if="loading" text width="60%" />
+          <template v-else> {{ postData.Title }} </template>
+        </template>
+        <template #header-extra>
+          <n-tag :type="PostStatusTag.type">
+            <template #icon>
+              <n-icon :component="PostStatusTag.icon" />
+            </template>
+            {{ PostStatusTag.statusText }}
+          </n-tag>
+        </template>
+        <n-skeleton v-if="loading" text :repeat="6" />
+        <template v-else>
+          <n-space vertical>
+            <n-steps :current="(currentStep as number)" status="process">
+              <n-step
+                title="待辅导员通过"
+                description="辅导员检查推送并提出修改意见，待团支部修改，最终通过"
+              />
+              <n-step title="待转存" description="辅导员审核已通过，团支部需要确认转存给团委" />
+              <n-step
+                title="待团委通过"
+                description="团委干事再次检查推送内容并进行修改，然后通过"
+              />
+              <n-step
+                title="待新媒发出"
+                description="新媒体中心将进行再次检查，推送最终进入待发出列表"
+              />
+              <n-step title="已发出" description="您的推送已经发送至公众号，请注意查看" />
+            </n-steps>
+            <n-data-table
+              :columns="ResPeopleColumns"
+              :data="ResPeopleData"
+              :pagination="false"
+              :bordered="true"
+            />
+          </n-space>
+        </template>
+      </n-card>
+    </div>
+    <div
+      class="cardMargin"
+      v-show="!notFound && !loading && Role == 'TZB' && postData.PostStatus == 'ToRevise'"
+    >
+      <n-card :bordered="false" title="申请复审">
+        <n-space vertical>
+          在你按照辅导员要求修改后，可以点击此处请求辅导员复审。
+          <n-space>
+            <n-button n-button @click="openReviseTab" type="primary">申请复审</n-button>
+          </n-space>
+        </n-space>
+      </n-card>
+    </div>
+    <div class="cardMargin" v-show="!notFound && !loading && Role == 'FDY'">
+      <n-card :bordered="false" title="辅导员检查入口">
+        <n-space vertical>
+          <n-space>
+            <n-button n-button @click="openPaperPreviewUrl" type="primary">打开预览链接</n-button>
+            <n-button @click="openPaperPreviewCover" v-show="coverPreviewUrl != ''"
+              >打开封面预览</n-button
+            >
+          </n-space>
+          <n-collapse>
+            <n-collapse-item title="扫码预览" name="1">
+              <vue-qr :text="paperPreviewUrl" />
+            </n-collapse-item>
+          </n-collapse>
+        </n-space>
+      </n-card>
+    </div>
+    <div class="cardMargin">
+      <n-card :bordered="false" title="申请详情" v-show="!notFound && !loading">
+        <n-collapse>
+          <n-collapse-item title="原秀米推送快照" name="1">
+            <n-data-table
+              :columns="XiumiSnapshotColumns"
+              :data="XiumiSnapshotData"
+              :pagination="false"
+              :bordered="true"
+            />
+          </n-collapse-item>
+          <n-collapse-item title="审核时间线" name="2">
+            <n-timeline>
+              <n-timeline-item
+                v-for="timelineItem in TimelineItems"
+                :type="timelineItem.type"
+                :title="timelineItem.title"
+                :content="timelineItem.content"
+                :time="timelineItem.time"
+                :key="timelineItem._id"
+              />
+            </n-timeline>
+          </n-collapse-item>
+        </n-collapse>
+      </n-card>
+    </div>
+    <div class="cardMargin">
+      <n-card :bordered="false" title="评论" v-show="!notFound && !loading">
+        <n-list>
+          <n-list-item v-for="comment in commentData" :key="comment._id">
+            <n-thing>
+              <template #avatar>
+                <n-avatar round>
+                  {{ comment.user.nickname[0] }}
+                  <template #icon>
+                    <UserOutlined />
+                  </template>
+                </n-avatar>
+              </template>
+              <template #header>
+                <n-space>
+                  <div style="commentHeader">{{ comment.user.nickname }}</div>
+                  <n-tag :bordered="true" type="info" size="small">
+                    {{ RoleNameMap[comment.user.role] }}
+                  </n-tag>
+                </n-space>
+              </template>
+              <template #description>
+                <div class="commentDate">{{ comment.DateString }}</div>
+              </template>
+              <p class="ql-editor" v-html="comment.HTMLContent"></p>
+            </n-thing>
+          </n-list-item>
+        </n-list>
+      </n-card>
+    </div>
+    <div class="cardMargin">
+      <n-card :bordered="false" title="操作" v-show="!notFound && !loading">
+        <n-space vertical>
+          <n-space>
+            <n-button type="primary" @click="doMakeComment"> 评论 </n-button>
+            <n-button
+              type="error"
+              @click="doMakeCommentAndReject"
+              v-show="Role == 'FDY' && postData.PostStatus == 'FDYCheck'"
+            >
+              评论并驳回
+            </n-button>
+            <n-button
+              type="success"
+              @click="doPassPost"
+              v-show="Role == 'FDY' && postData.PostStatus == 'FDYCheck'"
+            >
+              通过
+            </n-button>
+          </n-space>
+          <n-space>
+            <QuillEditor
+              ref="quillEditor"
+              :options="EditorOptions"
+              v-model:content="CommentContent"
+              style="height: 350px"
+              class="quillEditor"
+              theme="snow"
+            />
+          </n-space>
+        </n-space>
+      </n-card>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
+  import { ref, h, reactive } from 'vue';
   import { useRoute } from 'vue-router';
+  import {
+    CheckCircleFilled,
+    CloseCircleFilled,
+    FrownFilled,
+    MailFilled,
+    MehFilled,
+    SecurityScanFilled,
+    SmileFilled,
+    TeamOutlined,
+    UserOutlined,
+  } from '@vicons/antd';
+  import { getPostDetail, requireRevise, sendComment, passPost } from '@/api/post/post';
+  import { getOtherUserInfo } from '@/api/user/user';
+  import {
+    NButton,
+    NCollapse,
+    NCollapseItem,
+    NTimeline,
+    NTimelineItem,
+    useMessage,
+  } from 'naive-ui';
+  import { dateFormat, renderIcon } from '@/utils';
+  import { QuillEditor } from '@vueup/vue-quill';
+  import '@vueup/vue-quill/dist/vue-quill.snow.css';
+  import { useUserStore } from '@/store/modules/user';
+  import vueQr from 'vue-qr/src/packages/vue-qr.vue';
+  import router from '@/router';
+
   const route = useRoute();
+  const userStore = useUserStore();
+  const Role = userStore.getRole;
+  const message = useMessage();
   const postId = route.params['id'];
+  const notFound = ref(false);
+  const loading = ref(true);
+  const TimelineItems: any = ref([]);
+  const PostStatusTag = ref({
+    icon: undefined,
+    statusText: '',
+    type: '',
+  });
+  const XiumiSnapshotColumns = [
+    {
+      title: '属性',
+      key: 'attr',
+      resizable: true,
+    },
+    {
+      title: '值',
+      key: 'val',
+      resizable: true,
+    },
+  ];
+  const ResPeopleColumns = [
+    {
+      title: '身份',
+      key: 'description',
+      resizable: true,
+    },
+    {
+      title: '用户',
+      key: 'user',
+      resizable: true,
+      render(row, _index) {
+        return h(
+          NButton,
+          {
+            size: 'small',
+            type: 'success',
+            onClick: () => {
+              // TODO: 打开用户详情
+              alert(JSON.stringify(row));
+            },
+          },
+          {
+            icon: renderIcon(TeamOutlined),
+            default: row.user.nickname,
+          }
+        );
+      },
+    },
+  ];
+
+  const XiumiSnapshotData: any = ref([]);
+  const ResPeopleData: any = ref([]);
+  const paperPreviewUrl = ref('');
+  const coverPreviewUrl = ref('');
+  function openPaperPreviewUrl() {
+    window.open(paperPreviewUrl.value);
+  }
+  function openPaperPreviewCover() {
+    window.open(coverPreviewUrl.value);
+  }
+  const postData: any = ref({
+    OwnerId: '',
+    Title: '',
+    FDYInCharge: '',
+    TwMemberInCharge: '',
+    PostStatus: '',
+    TimeLine: [],
+    XiumiSessionId: '',
+    XiumiPaperInfo: '',
+    TZBForwardPaperInfo: '',
+    TZBForwardPaperAccountId: '',
+    pubaccPaperId: '',
+    TWArrangeForwardPaperInfo: '',
+    TWArrangeForwardSessionId: '',
+    TWForwardPaperInfo: '',
+    SendingDate: '',
+  });
+  const commentData: any = ref([]);
+  const currentStep = ref(2);
+  const RoleNameMap = {
+    WebAdmin: '网站管理员',
+    FDY: '辅导员',
+    TwAdmin: '团委管理员',
+    TZB: '团支部',
+    TwMember: '团委干事',
+  };
+  function getXiumiSnapshotData() {
+    const xiumiInfoObj = JSON.parse(postData.value.XiumiPaperInfo);
+    paperPreviewUrl.value = xiumiInfoObj.data.show_url;
+    coverPreviewUrl.value = 'http://' + xiumiInfoObj.data.cover.replace('//', '');
+    console.log(coverPreviewUrl.value);
+    XiumiSnapshotData.value.push({
+      attr: '文章id',
+      val: xiumiInfoObj.data.show_id,
+    });
+    XiumiSnapshotData.value.push({
+      attr: '文章标题',
+      val: xiumiInfoObj.data.title,
+    });
+    XiumiSnapshotData.value.push({
+      attr: '文章描述',
+      val: xiumiInfoObj.data.desc,
+    });
+    XiumiSnapshotData.value.push({
+      attr: '预览链接',
+      val: xiumiInfoObj.data.show_url,
+    });
+    XiumiSnapshotData.value.push({
+      attr: '封面链接',
+      val: xiumiInfoObj.data.cover,
+    });
+  }
+  function getResPeopleData() {
+    ResPeopleData.value.push({
+      description: '发起人',
+      user: postData.value['OwnerUser'].user,
+    });
+    ResPeopleData.value.push({
+      description: '负责辅导员',
+      user: postData.value['FDYUser'].user,
+    });
+    if (postData.value['TWMemberUser'])
+      ResPeopleData.value.push({
+        description: '负责审核干事',
+        user: postData.value['TWMemberUser'].user,
+      });
+  }
+  function getTimelineItems() {
+    const poststatusMap = {
+      FDYCheck: {
+        title: '待辅导员检查',
+        content: '等待辅导员查看并提出修改意见',
+        type: 'info',
+      },
+      ToRevise: {
+        title: '待修改',
+        content: '辅导员提出了修改意见',
+        type: 'error',
+      },
+      FDYPass: {
+        title: '辅导员通过',
+        content: '辅导员已经审核通过',
+        type: 'success',
+      },
+      TWToCheck: {
+        title: '待团委检查',
+        content: '等待团委分配检查任务',
+        type: 'info',
+      },
+      TWChecking: {
+        title: '团委正检查',
+        content: '团委干事正在检查并修改你的推送',
+        type: 'info',
+      },
+      Sending: {
+        title: '待新媒体发送',
+        content: '推送转存至新媒体账号，等待发送',
+        type: 'info',
+      },
+      Sended: {
+        title: '已发送',
+        content: '推送成功发送至公众号',
+        type: 'success',
+      },
+    };
+    for (let i = 0; i < postData.value.TimeLine.length; i++) {
+      const mpItem = poststatusMap[postData.value.TimeLine[i].status];
+      const statusDate = new Date(parseInt(postData.value.TimeLine[i].UpdateTime));
+      TimelineItems.value.push({
+        type: mpItem.type,
+        title: mpItem.title,
+        content: mpItem.content,
+        time: dateFormat('YYYY-mm-dd HH:MM:SS', statusDate),
+        _id: postData.value.TimeLine[i]._id,
+      });
+    }
+  }
+  getPostDetail(postId).then(async (postDetail) => {
+    const PostStatusMap = {
+      FDYCheck: {
+        type: 'warning',
+        icon: MehFilled,
+        tips: '待辅导员审核',
+      },
+      ToRevise: {
+        type: 'error',
+        icon: FrownFilled,
+        tips: '待修改',
+      },
+      FDYPass: {
+        type: 'success',
+        icon: SmileFilled,
+        tips: '辅导员审核通过',
+      },
+      TWToCheck: {
+        type: 'warning',
+        icon: TeamOutlined,
+        tips: '待团委审核',
+      },
+      TWChecking: {
+        type: 'warning',
+        icon: SecurityScanFilled,
+        tips: '团委正审核',
+      },
+      Sending: {
+        type: 'success',
+        icon: MailFilled,
+        tips: '待新媒发送',
+      },
+      Sended: {
+        type: 'info',
+        icon: CheckCircleFilled,
+        tips: '已发出',
+      },
+    };
+    if (postDetail.code == 200) {
+      postData.value = postDetail.post_data;
+      postData.value['OwnerUser'] = await getOtherUserInfo(postDetail.post_data.OwnerId);
+      postData.value['FDYUser'] = await getOtherUserInfo(postDetail.post_data.FDYInCharge);
+      PostStatusTag.value.icon = PostStatusMap[postDetail.post_data.PostStatus].icon;
+      PostStatusTag.value.statusText = PostStatusMap[postDetail.post_data.PostStatus].tips;
+      PostStatusTag.value.type = PostStatusMap[postDetail.post_data.PostStatus].type;
+      if (postDetail.post_data.TwMemberInCharge)
+        postData.value['TWMemberUser'] = await getOtherUserInfo(
+          postDetail.post_data.TwMemberInCharge
+        );
+      getXiumiSnapshotData();
+      getResPeopleData();
+      getTimelineItems();
+      const currentStepMap = {
+        FDYCheck: 1,
+        ToRevise: 1,
+        FDYPass: 2,
+        TWToCheck: 3,
+        TWChecking: 3,
+        Sending: 4,
+        Sended: 5,
+      };
+      currentStep.value = currentStepMap[postDetail.post_data.PostStatus];
+      for (let i = 0; i < postDetail.comment_data.length; i++) {
+        postDetail.comment_data[i]['user'] = (
+          await getOtherUserInfo(postDetail.comment_data[i].OwnerId)
+        ).user;
+        // 只找HTML元素块
+        const ContentObj = JSON.parse(postDetail.comment_data[i].CommentContent);
+        for (let j = 0; j < ContentObj.length; j++) {
+          if (ContentObj[j].type == 'HTML') {
+            postDetail.comment_data[i]['HTMLContent'] = ContentObj[j].data;
+            break;
+          }
+        }
+        if (!postDetail.comment_data[i]['HTMLContent']) {
+          postDetail.comment_data[i]['HTMLContent'] = '<strong>空白评论</strong>';
+        }
+        // 评论时间
+        const commentDate = new Date(parseInt(postDetail.comment_data[i].CommentDate));
+        postDetail.comment_data[i]['DateString'] = dateFormat('YYYY-mm-dd HH:MM', commentDate);
+      }
+      commentData.value = postDetail.comment_data;
+      loading.value = false;
+      notFound.value = false;
+    } else {
+      loading.value = false;
+      notFound.value = true;
+    }
+  });
+
+  const EditorOptions = reactive({
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+        ['blockquote', 'code-block'],
+
+        [{ header: 1 }, { header: 2 }], // custom button values
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+        [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+
+        [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+
+        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+        [{ font: [] }],
+        [{ align: [] }],
+        ['clean'],
+        ['image'],
+      ],
+    },
+    theme: 'snow',
+    placeholder: '在这里输入你的评论，支持富文本。',
+  });
+  const quillEditor = ref();
+  const CommentContent = ref('');
+  function doMakeComment() {
+    sendComment(Role, {
+      postId,
+      Comment: JSON.stringify([
+        {
+          type: 'HTML',
+          data: quillEditor.value.getHTML(),
+        },
+      ]),
+    }).then((res) => {
+      if (res.code == 200) {
+        // 发送成功，直接刷新整个页面
+        message.success('评论成功!');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else {
+        message.error(res['map_message']);
+      }
+    });
+  }
+  function doMakeCommentAndReject() {
+    requireRevise({
+      postId,
+      Comment: JSON.stringify([
+        {
+          type: 'HTML',
+          data: quillEditor.value.getHTML(),
+        },
+      ]),
+    }).then((res) => {
+      if (res.code == 200) {
+        // 发送成功，直接刷新整个页面
+        message.success('驳回申请成功!');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else {
+        message.error(res['map_message']);
+      }
+    });
+  }
+  function openReviseTab() {
+    router.push({ name: 'post_revise', params: { id: postId } });
+  }
+  function doPassPost() {
+    passPost(postId).then((res) => {
+      if (res.code == 200) {
+        message.success('通过申请成功!');
+        setTimeout(() => {
+          location.reload();
+        }, 1000);
+      } else {
+        message.error(res['map_message']);
+      }
+    });
+  }
 </script>
+
+<style scoped>
+  .cardMargin {
+    margin-top: 20px;
+  }
+  .commentDate {
+    color: grey;
+  }
+  .commentHeader {
+    font-weight: 500;
+    font-size: 16px;
+  }
+</style>

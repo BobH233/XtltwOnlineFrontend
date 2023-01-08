@@ -1,9 +1,12 @@
 <template>
   <div>
-    <n-card :bordered="false" title="新建审核申请">
-      当你有一篇新的推送想要发出，在这里选择你的秀米账号，以及要审核的图文，然后提交给辅导员审核。<br />
-      <b style="text-decoration: underline">建议标题与你的推送标题保持一致！</b> <br />
-      <strong style="color: red">在推送发出之前，请勿删除你秀米账号上的这篇推送！</strong>
+    <n-card :bordered="false" title="审核修订">
+      请务必保证按照辅导员的要求，在秀米上对原推送进行了修改 <br />
+      <strong style="color: red">确保最后点击秀米编辑界面上方-预览-分享-申请审核！</strong> <br />
+      如果你是在原秀米图文上进行的更改，请选择<strong style="color: red">“旧图文”</strong>选项。
+      <br />
+      如果你是新建了秀米图文并进行更改，请选择<strong style="color: red">“新图文”</strong
+      >选项，并选择新的秀米图文！ <br />
     </n-card>
     <n-card :bordered="false" class="mt-4 proCard">
       <n-grid cols="1 s:1 m:7 l:7 xl:7 2xl:7" responsive="screen">
@@ -16,28 +19,31 @@
             ref="formRef"
             class="py-8"
           >
-            <n-form-item label="标题" path="title">
-              <n-input v-model:value="formValue.title" placeholder="建议与推送标题一致" />
+            <n-form-item label="图文状态" path="PaperOption">
+              <n-radio-group v-model:value="formValue.updatePaperId" name="PaperOption1">
+                <n-radio-button key="false" value="false" label="旧图文" />
+                <n-radio-button key="true" value="true" label="新图文" />
+              </n-radio-group>
             </n-form-item>
-            <n-form-item label="负责辅导员" path="FDYId">
+            <n-form-item
+              label="秀米账号"
+              path="SessionId"
+              v-show="formValue.updatePaperId == 'true'"
+            >
               <n-select
-                v-model:value="formValue.FDYId"
-                :options="FDYOptions"
-                placeholder="选择负责审核的辅导员"
-                filterable
-              />
-            </n-form-item>
-            <n-form-item label="秀米账号" path="SessionId">
-              <n-select
-                v-model:value="formValue.SessionId"
+                v-model:value="formValue.newSessionId"
                 :options="SessionOptions"
                 @update:value="onXiumiSessionSelect"
                 placeholder="选择制作推送的秀米账号"
               />
             </n-form-item>
-            <n-form-item label="推送文章" path="PaperId1">
+            <n-form-item
+              label="推送文章"
+              path="PaperId1"
+              v-show="formValue.updatePaperId == 'true'"
+            >
               <n-select
-                v-model:value="formValue.PaperId"
+                v-model:value="formValue.newPaperId"
                 :options="PaperOptions"
                 filterable
                 placeholder="选择需要审核的推送"
@@ -55,42 +61,29 @@
 </template>
 
 <script lang="ts" setup>
-  import { useRoute, useRouter } from 'vue-router';
+  import { useRoute } from 'vue-router';
   import { ref, reactive } from 'vue';
-  import { useMessage, useDialog, SelectOption } from 'naive-ui';
-  import { getUserLists } from '@/api/user/user';
+  import { useMessage, useDialog, SelectOption, NRadioButton } from 'naive-ui';
   import { getValidXiumiSessions, getRecentPaper } from '@/api/xiumi/xiumi';
-  import { sendNewPost } from '@/api/post/post';
+  import { requireRecheck } from '@/api/post/post';
 
   const dialog = useDialog();
   const route = useRoute();
-  const router = useRouter();
   const formRef: any = ref(null);
   const message = useMessage();
+  const postId = route.params['id'];
 
   const defaultValueRef = () => ({
-    title: '',
-    FDYId: '',
-    SessionId: '',
-    PaperId: '',
+    postId: postId,
+    updatePaperId: 'false',
+    newSessionId: '',
+    newPaperId: '',
   });
   let formValue = reactive(defaultValueRef());
 
-  let FDYOptions: any = ref([]);
   let SessionOptions: any = ref([]);
   let PaperOptions: any = ref([]);
-  getUserLists(JSON.stringify(['FDY'])).then((res) => {
-    if (res.code == 200) {
-      for (let i = 0; i < res.data.length; i++) {
-        FDYOptions.value.push({
-          label: res.data[i].nickname,
-          value: res.data[i]._id,
-        });
-      }
-    } else {
-      message.error('无法加载辅导员列表!');
-    }
-  });
+
   getValidXiumiSessions().then((res) => {
     if (res.code == 200) {
       for (let i = 0; i < res.data.length; i++) {
@@ -105,32 +98,39 @@
     }
   });
   const rules = {
-    title: {
-      required: true,
-      message: '标题不能为空!',
-      trigger: 'blur',
-    },
-    FDYId: {
-      required: true,
-      message: '辅导员ID不能为空!',
-    },
     SessionId: {
       required: true,
       message: '秀米账号不能为空!',
+      validator() {
+        const value = formValue.newSessionId;
+        if (formValue.updatePaperId == 'false') return true;
+        if (!value) {
+          return new Error('秀米账号不能为空!');
+        }
+        return true;
+      },
     },
     PaperId1: {
       required: true,
       message: '推送文章不能为空!',
+      validator() {
+        const value = formValue.newPaperId;
+        if (formValue.updatePaperId == 'false') return true;
+        if (!value) {
+          return new Error('秀米账号不能为空!');
+        }
+        return true;
+      },
     },
   };
   let curPaperPage = 0;
   function handleScroll(e: Event) {
     const currentTarget = e.currentTarget as HTMLElement;
-    if (formValue.SessionId == '') return;
+    if (formValue.newSessionId == '') return;
     if (currentTarget.scrollTop + currentTarget.offsetHeight >= currentTarget.scrollHeight) {
       message.info('正在加载更多...');
       getRecentPaper({
-        sessionId: formValue.SessionId,
+        sessionId: formValue.newSessionId,
         pageLimit: 10,
         page: curPaperPage + 1,
       }).then((res) => {
@@ -174,30 +174,27 @@
   function doNewPost() {
     formRef.value.validate((errors) => {
       if (!errors) {
-        sendNewPost(formValue).then((res) => {
+        requireRecheck(formValue).then((res) => {
           if (res.code == 200) {
             dialog.success({
-              title: '新建申请成功',
-              content: '点击跳转到新帖子',
-              positiveText: '跳转',
-              negativeText: '取消',
+              title: '申请复审成功',
+              content: '请等待辅导员再次审核',
+              positiveText: '确认',
               onPositiveClick: () => {
                 setTimeout(() => {
                   window['$removeTab'](route);
-                  router.push({ name: 'detail', params: { id: res.postId } });
                 }, 10);
               },
             });
           } else {
             dialog.error({
-              title: '新建审核申请失败',
+              title: '申请复审失败',
               content: res['map_message'],
-              positiveText: '关闭',
             });
           }
         });
       } else {
-        message.error('请填写完整信息');
+        message.error('请填写完整信息!');
       }
     });
   }

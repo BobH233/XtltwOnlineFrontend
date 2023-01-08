@@ -189,7 +189,7 @@
   });
 
   function handleViewDetail(record: Recordable) {
-    router.push({ name: 'post_detail', params: { id: record._id } });
+    router.push({ name: 'detail', params: { id: record._id } });
   }
 </script>
 

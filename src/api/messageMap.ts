@@ -15,6 +15,7 @@ const MessageMap = {
   'This post could not be deleted!': '这篇申请不能被删除!',
   success: '成功',
   'Delete successfully!': '删除成功!',
+  'Successfully update post status and paperId!': '成功更新申请和图文id',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

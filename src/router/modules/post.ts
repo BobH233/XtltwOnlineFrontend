@@ -26,6 +26,7 @@ const routes: Array<RouteRecordRaw> = [
       title: '审核申请',
       icon: renderIcon(ClockCircleFilled),
       permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
+      keepAlive: true,
     },
     children: [
       {
@@ -52,13 +53,23 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'detail/:id?',
-        name: 'post_detail',
+        name: 'detail',
         meta: {
           title: '申请详情',
           hidden: true,
           keepAlive: true,
         },
         component: () => import('@/views/post/detail/detail.vue'),
+      },
+      {
+        path: 'revise/:id?',
+        name: 'post_revise',
+        meta: {
+          title: '申请复审',
+          hidden: true,
+          keepAlive: true,
+        },
+        component: () => import('@/views/post/revise/revise.vue'),
       },
     ],
   },
