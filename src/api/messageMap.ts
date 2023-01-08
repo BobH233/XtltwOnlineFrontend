@@ -16,6 +16,13 @@ const MessageMap = {
   success: '成功',
   'Delete successfully!': '删除成功!',
   'Successfully update post status and paperId!': '成功更新申请和图文id',
+  'Invalid sessionId, try manual setting sessionId!': '非法的秀米会话，请尝试手动指定秀米会话',
+  'Could not find the post!': '无法找到对应的帖子',
+  'Empty params!': '缺少参数',
+  'Could not find valid session for tw! Update your XiumiSessions!':
+    '无法找到合适的公用账号秀米会话，请在秀米账号绑定中登录公用账号!',
+  'Forward paper failed, see reasons.': '转存文章失败，详情见错误信息',
+  'Successfully pass the post!': '成功通过了文章',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

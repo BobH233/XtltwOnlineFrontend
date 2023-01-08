@@ -100,7 +100,6 @@
           positiveText: '完成',
           onPositiveClick: () => {
             setTimeout(() => {
-              window['$removeTab'](route);
               router.push({ name: 'xiumi_session_list' });
             }, 10);
           },

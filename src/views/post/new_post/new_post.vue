@@ -35,7 +35,7 @@
                 placeholder="选择制作推送的秀米账号"
               />
             </n-form-item>
-            <n-form-item label="推送文章" path="PaperId1">
+            <n-form-item label="推送文章" path="PaperId">
               <n-select
                 v-model:value="formValue.PaperId"
                 :options="PaperOptions"
@@ -118,7 +118,7 @@
       required: true,
       message: '秀米账号不能为空!',
     },
-    PaperId1: {
+    PaperId: {
       required: true,
       message: '推送文章不能为空!',
     },
@@ -127,8 +127,8 @@
   function handleScroll(e: Event) {
     const currentTarget = e.currentTarget as HTMLElement;
     if (formValue.SessionId == '') return;
-    if (currentTarget.scrollTop + currentTarget.offsetHeight >= currentTarget.scrollHeight) {
-      message.info('正在加载更多...');
+    console.log(currentTarget.scrollTop + currentTarget.offsetHeight, currentTarget.scrollHeight);
+    if (currentTarget.scrollTop + currentTarget.offsetHeight + 1 >= currentTarget.scrollHeight) {
       getRecentPaper({
         sessionId: formValue.SessionId,
         pageLimit: 10,
@@ -183,7 +183,6 @@
               negativeText: '取消',
               onPositiveClick: () => {
                 setTimeout(() => {
-                  window['$removeTab'](route);
                   router.push({ name: 'detail', params: { id: res.postId } });
                 }, 10);
               },

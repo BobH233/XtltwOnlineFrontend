@@ -71,6 +71,16 @@ const routes: Array<RouteRecordRaw> = [
         },
         component: () => import('@/views/post/revise/revise.vue'),
       },
+      {
+        path: 'confirm/:id?',
+        name: 'post_confirm',
+        meta: {
+          title: '手动转存',
+          hidden: true,
+          keepAlive: true,
+        },
+        component: () => import('@/views/post/confirm/confirm.vue'),
+      },
     ],
   },
 ];

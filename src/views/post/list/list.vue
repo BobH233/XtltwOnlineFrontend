@@ -32,7 +32,7 @@
 
 <script lang="ts" setup>
   import { useUserStore } from '@/store/modules/user';
-  import { getPosts, deletePost } from '@/api/post/post';
+  import { getPosts, deletePost, confirmTZB } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
   import { useDialog, NTag, NSelect, useMessage } from 'naive-ui';
   import { reactive, h, ref } from 'vue';
@@ -178,7 +178,42 @@
           },
           {
             label: '转存',
-            onClick: () => {},
+            onClick: () => {
+              dialog.warning({
+                title: '确认转存',
+                content: '你确认要转存这篇推送吗，转存后将无法撤回',
+                positiveText: '确认',
+                negativeText: '取消',
+                onPositiveClick: () => {
+                  message.info('请稍等，正在转存...');
+                  confirmTZB({
+                    postId: record._id,
+                  }).then((res) => {
+                    if (res.code == 200) {
+                      dialog.success({
+                        title: '转存成功',
+                        content: '接下来，请静静等待你的推送被发送',
+                        positiveText: '确定',
+                        onPositiveClick: () => {
+                          location.reload();
+                        },
+                      });
+                    } else if (res.code == 417) {
+                      dialog.error({
+                        title: '转存失败',
+                        content: res['map_message'],
+                        positiveText: '确定',
+                        onPositiveClick: () => {
+                          router.push({ name: 'post_confirm', params: { id: record._id }});
+                        },
+                      });
+                    } else {
+                      message.error(res['map_message']);
+                    }
+                  });
+                },
+              });
+            },
             ifShow: () => {
               return Role == 'TZB' && record.PostStatus == 'FDYPass';
             },

@@ -51,7 +51,7 @@
               />
             </n-form-item>
             <n-space justify="center">
-              <n-button type="primary" @click="doNewPost">确认发出</n-button>
+              <n-button type="primary" @click="doRequireRecheck">确认发出</n-button>
             </n-space>
           </n-form>
         </n-grid-item>
@@ -171,7 +171,7 @@
       }
     });
   }
-  function doNewPost() {
+  function doRequireRecheck() {
     formRef.value.validate((errors) => {
       if (!errors) {
         requireRecheck(formValue).then((res) => {

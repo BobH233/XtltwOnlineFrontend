@@ -77,9 +77,11 @@
           positiveText: '完成',
           onPositiveClick: () => {
             setTimeout(() => {
-              window['$removeTab'](route);
               router.push({ name: 'pubacc_list' });
             }, 10);
+            setTimeout(() => {
+              window['$removeTab'](route);
+            }, 500);
           },
         });
       } else {

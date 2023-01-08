@@ -67,8 +67,11 @@
         </n-space>
       </n-card>
     </div>
-    <div class="cardMargin" v-show="!notFound && !loading && Role == 'FDY'">
-      <n-card :bordered="false" title="辅导员检查入口">
+    <div
+      class="cardMargin"
+      v-show="!notFound && !loading && (Role == 'FDY' || Role == 'TwAdmin' || Role == 'TwMember')"
+    >
+      <n-card :bordered="false" title="审核检查入口">
         <n-space vertical>
           <n-space>
             <n-button n-button @click="openPaperPreviewUrl" type="primary">打开预览链接</n-button>
@@ -143,7 +146,7 @@
     <div class="cardMargin">
       <n-card :bordered="false" title="操作" v-show="!notFound && !loading">
         <n-space vertical>
-          <n-space>
+          <n-space :wrap-item="false">
             <n-button type="primary" @click="doMakeComment"> 评论 </n-button>
             <n-button
               type="error"
@@ -154,10 +157,34 @@
             </n-button>
             <n-button
               type="success"
-              @click="doPassPost"
+              @click="doPassPostFDY"
               v-show="Role == 'FDY' && postData.PostStatus == 'FDYCheck'"
             >
               通过
+            </n-button>
+            <n-button
+              type="success"
+              @click="showModalPass = true"
+              v-show="Role == 'TwAdmin' && postData.PostStatus == 'TWToCheck'"
+            >
+              直接通过
+            </n-button>
+            <n-button
+              type="success"
+              @click="showModalPass = true"
+              v-show="Role == 'TwMember' && postData.PostStatus == 'TWChecking'"
+            >
+              通过
+            </n-button>
+            <n-button
+              type="primary"
+              @click="doArrangeMember"
+              v-show="Role == 'TwAdmin' && postData.PostStatus == 'TWToCheck'"
+            >
+              安排干事
+            </n-button>
+            <n-button @click="CopyPaperForwardNotion" v-show="postData.PostStatus == 'Sending'">
+              复制通知信息
             </n-button>
           </n-space>
           <n-space>
@@ -173,6 +200,56 @@
         </n-space>
       </n-card>
     </div>
+    <n-modal v-model:show="showModalPass">
+      <n-card
+        style="width: 600px"
+        title="通过推送"
+        :bordered="true"
+        size="huge"
+        role="dialog"
+        aria-modal="true"
+      >
+        <n-form
+          :label-width="120"
+          :rules="passFormRules"
+          label-placement="left"
+          ref="formRef"
+          class="py-8"
+        >
+          <n-form-item label="新媒秀米账号" path="forwardTarget">
+            <n-input v-model:value="forwardTarget" placeholder="请输入新媒体的秀米账号" />
+          </n-form-item>
+          <n-space justify="center">
+            <n-button type="primary" @click="doPassPostTW">确认通过</n-button>
+          </n-space>
+        </n-form>
+      </n-card>
+    </n-modal>
+    <n-modal v-model:show="showModalArrange">
+      <n-card
+        style="width: 600px"
+        title="通过推送"
+        :bordered="true"
+        size="huge"
+        role="dialog"
+        aria-modal="true"
+      >
+        <n-form
+          :label-width="120"
+          :rules="passFormRules"
+          label-placement="left"
+          ref="formRef"
+          class="py-8"
+        >
+          <n-form-item label="新媒秀米账号" path="forwardTarget">
+            <n-input v-model:value="forwardTarget" placeholder="请输入新媒体的秀米账号" />
+          </n-form-item>
+          <n-space justify="center">
+            <n-button type="primary" @click="doPassPostTW">确认通过</n-button>
+          </n-space>
+        </n-form>
+      </n-card>
+    </n-modal>
   </div>
 </template>
 
@@ -190,7 +267,13 @@
     TeamOutlined,
     UserOutlined,
   } from '@vicons/antd';
-  import { getPostDetail, requireRevise, sendComment, passPost } from '@/api/post/post';
+  import {
+    getPostDetail,
+    requireRevise,
+    sendComment,
+    passPostFDY,
+    passPostTW,
+  } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
   import {
     NButton,
@@ -198,6 +281,7 @@
     NCollapseItem,
     NTimeline,
     NTimelineItem,
+    useDialog,
     useMessage,
   } from 'naive-ui';
   import { dateFormat, renderIcon } from '@/utils';
@@ -206,6 +290,7 @@
   import { useUserStore } from '@/store/modules/user';
   import vueQr from 'vue-qr/src/packages/vue-qr.vue';
   import router from '@/router';
+  import { FullCapNotion, PaperForwardNotion } from '@/constant/constant';
 
   const route = useRoute();
   const userStore = useUserStore();
@@ -214,12 +299,14 @@
   const postId = route.params['id'];
   const notFound = ref(false);
   const loading = ref(true);
+  const dialog = useDialog();
   const TimelineItems: any = ref([]);
   const PostStatusTag = ref({
     icon: undefined,
     statusText: '',
     type: '',
   });
+  const formRef: any = ref(null);
   const XiumiSnapshotColumns = [
     {
       title: '属性',
@@ -302,7 +389,6 @@
     const xiumiInfoObj = JSON.parse(postData.value.XiumiPaperInfo);
     paperPreviewUrl.value = xiumiInfoObj.data.show_url;
     coverPreviewUrl.value = 'http://' + xiumiInfoObj.data.cover.replace('//', '');
-    console.log(coverPreviewUrl.value);
     XiumiSnapshotData.value.push({
       attr: '文章id',
       val: xiumiInfoObj.data.show_id,
@@ -550,8 +636,8 @@
   function openReviseTab() {
     router.push({ name: 'post_revise', params: { id: postId } });
   }
-  function doPassPost() {
-    passPost(postId).then((res) => {
+  function doPassPostFDY() {
+    passPostFDY(postId).then((res) => {
       if (res.code == 200) {
         message.success('通过申请成功!');
         setTimeout(() => {
@@ -562,6 +648,109 @@
       }
     });
   }
+  const showModalPass = ref(false);
+  const forwardTarget = ref('');
+  const passFormRules = {
+    forwardTarget: {
+      required: true,
+      message: '秀米账号不能为空!',
+      trigger: 'blur',
+      validator() {
+        const value = forwardTarget.value;
+        if (!value) {
+          return new Error('秀米账号不能为空!');
+        }
+        return true;
+      },
+    },
+  };
+  function getDetailError(data) {
+    let ret = '';
+    if (data.outOfLimit) {
+      ret += '对方账号已满/';
+    }
+    if (data.userNotFound) {
+      ret += '对方账号不存在/';
+    }
+    if (data.paperNotFound) {
+      ret += '图文不存在/';
+    }
+    return ret;
+  }
+  function CopyPaperForwardNotion() {
+    const forwardObj = JSON.parse(postData.value.TWForwardPaperInfo);
+    const title = forwardObj.title;
+    navigator.clipboard.writeText(PaperForwardNotion.replace('{{paperTitle}}', title));
+    message.info('通知信息已成功复制到剪辑版，去微信粘贴吧~');
+  }
+  function copyToClipboard(textToCopy) {
+    // navigator clipboard api needs a secure context (https)
+    if (navigator.clipboard && window.isSecureContext) {
+      // navigator clipboard api method'
+      return navigator.clipboard.writeText(textToCopy);
+    } else {
+      // text area method
+      let textArea = document.createElement('textarea');
+      textArea.value = textToCopy;
+      // make the textarea out of viewport
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      return new Promise((res1, rej1) => {
+        // here the magic happens
+        document.execCommand('copy') ? res1(123) : rej1();
+        textArea.remove();
+      });
+    }
+  }
+  function doPassPostTW() {
+    // 团委管理员和团委干事都是这里通过
+    formRef.value.validate((errors) => {
+      if (!errors) {
+        message.info('正在转存, 请稍等片刻...');
+        passPostTW({
+          postId,
+          forwardTarget: forwardTarget.value,
+        }).then((res) => {
+          if (res.code == 200) {
+            showModalPass.value = false;
+            message.success('成功通过!');
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          } else if (res.code == 500 && res.data) {
+            showModalPass.value = false;
+            dialog.error({
+              title: '通过失败',
+              content: '转发文章失败，请查看详细信息: ' + getDetailError(res.data),
+              positiveText: '确定',
+              onPositiveClick: () => {
+                if (res.data.outOfLimit) {
+                  copyToClipboard(FullCapNotion).then(() => {
+                    message.info('账号已满信息已复制到你的剪辑版，可以直接微信发送');
+                  });
+                }
+              },
+            });
+          } else {
+            dialog.error({
+              title: '通过失败',
+              content: '转发文章失败，信息: ' + res['map_message'],
+              positiveText: '确定',
+            });
+          }
+        });
+      } else {
+        message.error('请填写完整信息!');
+      }
+    });
+    const showModalArrange = ref(false);
+  }
+
+  function doArrangeMember() {}
 </script>
 
 <style scoped>

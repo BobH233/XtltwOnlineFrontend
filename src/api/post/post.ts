@@ -75,6 +75,21 @@ export interface requireRecheckResponseModel {
   message: string;
 }
 
+export interface PassTWResponseModel {
+  code: number;
+  message: string;
+  data: any;
+}
+
+export interface confirmTZBResponseModel {
+  code: number;
+  message: string;
+  data: {
+    success: boolean;
+    errorMsg: string;
+  };
+}
+
 export function getPosts(
   userPermission: string,
   params: getPostsParams
@@ -284,7 +299,7 @@ export function requireRecheck(params: any): Promise<requireRecheckResponseModel
   });
 }
 
-export function passPost(postId): Promise<requireRecheckResponseModel> {
+export function passPostFDY(postId): Promise<requireRecheckResponseModel> {
   return new Promise((resolve, reject) => {
     http
       .request<requireRecheckResponseModel>(
@@ -292,6 +307,56 @@ export function passPost(postId): Promise<requireRecheckResponseModel> {
           url: API_URL + '/api/post/fdy/pass',
           method: 'POST',
           params: { postId },
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function passPostTW(params): Promise<PassTWResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<PassTWResponseModel>(
+        {
+          url: API_URL + '/api/post/tw/pass',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function confirmTZB(params: any): Promise<confirmTZBResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<confirmTZBResponseModel>(
+        {
+          url: API_URL + '/api/post/tzb/confirm',
+          method: 'POST',
+          params,
         },
         {
           isTransformResponse: false,
