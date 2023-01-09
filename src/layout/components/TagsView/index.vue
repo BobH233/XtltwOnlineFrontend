@@ -38,6 +38,7 @@
                 :class="{ 'active-item': activeKey === element.path }"
                 @click.stop="goPage(element)"
                 @contextmenu="handleContextMenu($event, element)"
+                v-if="!element.meta.affix"
               >
                 <span>{{ element.meta.title }}</span>
                 <n-icon size="14" @click.stop="closeTabItem(element)" v-if="!element.meta.affix">

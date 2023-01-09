@@ -32,7 +32,7 @@ const routes: Array<RouteRecordRaw> = [
         path: 'console',
         name: `${routeName}_console`,
         meta: {
-          title: '主控台_fdy',
+          title: '主控台_fdy123',
           permissions: ['FDY'],
           affix: true,
         },
