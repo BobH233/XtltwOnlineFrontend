@@ -252,7 +252,7 @@
             <n-input v-model:value="forwardTarget" placeholder="请输入新媒体的秀米账号" />
           </n-form-item>
           <n-space justify="center">
-            <n-button type="primary" @click="doPassPostTW">确认通过</n-button>
+            <n-button type="primary" @click="doPassPostTW">确认安排</n-button>
           </n-space>
         </n-form>
       </n-card>

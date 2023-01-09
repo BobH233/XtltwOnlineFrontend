@@ -17,7 +17,7 @@
             <n-form-item label="秀米账号" path="username">
               <n-input v-model:value="formValue.username" placeholder="秀米注册的邮箱或者手机号" />
             </n-form-item>
-            <n-form-item label="新密码" path="password">
+            <n-form-item label="秀米密码" path="password">
               <n-input
                 v-model:value="formValue.password"
                 placeholder="输入新密码"
