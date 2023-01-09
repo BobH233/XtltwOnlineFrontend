@@ -138,7 +138,6 @@ export function xiumiSessionLogin(params: any): Promise<XiumiLoginResponseModel>
   });
 }
 
-
 export function getRecentPaper(params): Promise<XiumiRencentPapaerResponseModel> {
   return new Promise((resolve, reject) => {
     http
@@ -147,6 +146,31 @@ export function getRecentPaper(params): Promise<XiumiRencentPapaerResponseModel>
           url: API_URL + '/api/xiumi/getRecentPaper',
           method: 'POST',
           params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function getOtherUserSessions(userId): Promise<XiumiRencentPapaerResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<XiumiRencentPapaerResponseModel>(
+        {
+          url: API_URL + '/api/xiumi/getUserSessions',
+          method: 'POST',
+          params: { userId },
         },
         {
           isTransformResponse: false,

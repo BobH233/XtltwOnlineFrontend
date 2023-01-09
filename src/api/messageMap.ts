@@ -23,6 +23,7 @@ const MessageMap = {
     '无法找到合适的公用账号秀米会话，请在秀米账号绑定中登录公用账号!',
   'Forward paper failed, see reasons.': '转存文章失败，详情见错误信息',
   'Successfully pass the post!': '成功通过了文章',
+  'Could not find valid XiumiSession!': '无法找到有效的秀米账号',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

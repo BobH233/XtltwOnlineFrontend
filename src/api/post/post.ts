@@ -373,3 +373,28 @@ export function confirmTZB(params: any): Promise<confirmTZBResponseModel> {
       });
   });
 }
+
+export function twArrangeTwMember(params: any): Promise<confirmTZBResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<confirmTZBResponseModel>(
+        {
+          url: API_URL + '/api/post/tw/arrange',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}

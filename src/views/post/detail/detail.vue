@@ -50,6 +50,13 @@
               :pagination="false"
               :bordered="true"
             />
+            <n-data-table
+              :columns="ForwardAccountColumns"
+              :data="ForwardAccountData"
+              :pagination="false"
+              :bordered="true"
+              v-show="(Role == 'TwAdmin' || Role == 'TwMember')"
+            />
           </n-space>
         </template>
       </n-card>
@@ -73,6 +80,7 @@
     >
       <n-card :bordered="false" title="审核检查入口">
         <n-space vertical>
+          <div>这是团支部转存的原始版本，假如团委进行了修改，请在下面”推送修改检查“查看修改后的结果</div>
           <n-space>
             <n-button n-button @click="openPaperPreviewUrl" type="primary">打开预览链接</n-button>
             <n-button @click="openPaperPreviewCover" v-show="coverPreviewUrl != ''"
@@ -82,6 +90,28 @@
           <n-collapse>
             <n-collapse-item title="扫码预览" name="1">
               <vue-qr :text="paperPreviewUrl" />
+            </n-collapse-item>
+          </n-collapse>
+        </n-space>
+      </n-card>
+    </div>
+    <div
+      class="cardMargin"
+      v-show="!notFound && !loading && ((Role == 'TwMember' && postData.PostStatus == 'TWChecking') || (Role == 'TwAdmin' && postData.PostStatus == 'TWToCheck'))"
+    >
+      <n-card :bordered="false" title="推送修改检查入口">
+        <n-space vertical>
+          <div>假如你在待审核的帖子上做了修改，请在秀米中申请审核，然后再在这里预览查看是否更新</div>
+          <strong style="color:red">请确保这里的预览已经生效后，再进行通过！</strong>
+          <n-space>
+            <n-button n-button @click="openTwPaperPreviewUrl" type="primary">打开预览链接</n-button>
+            <n-button @click="openTwPaperPreviewCover" v-show="coverPreviewUrl != ''"
+              >打开封面预览</n-button
+            >
+          </n-space>
+          <n-collapse>
+            <n-collapse-item title="扫码预览" name="1">
+              <vue-qr :text="paperTwPreviewUrl" />
             </n-collapse-item>
           </n-collapse>
         </n-space>
@@ -137,7 +167,9 @@
               <template #description>
                 <div class="commentDate">{{ comment.DateString }}</div>
               </template>
-              <p class="ql-editor" v-html="comment.HTMLContent"></p>
+              <p class="ql-snow commentMargin">
+                <p class="ql-editor" v-html="comment.HTMLContent"></p>
+              </p>
             </n-thing>
           </n-list-item>
         </n-list>
@@ -178,7 +210,7 @@
             </n-button>
             <n-button
               type="primary"
-              @click="doArrangeMember"
+              @click="showModalArrange = true"
               v-show="Role == 'TwAdmin' && postData.PostStatus == 'TWToCheck'"
             >
               安排干事
@@ -203,7 +235,7 @@
     <n-modal v-model:show="showModalPass">
       <n-card
         style="width: 600px"
-        title="通过推送"
+        title="直接通过推送"
         :bordered="true"
         size="huge"
         role="dialog"
@@ -228,24 +260,38 @@
     <n-modal v-model:show="showModalArrange">
       <n-card
         style="width: 600px"
-        title="通过推送"
+        title="安排干事审核"
         :bordered="true"
         size="huge"
         role="dialog"
         aria-modal="true"
       >
         <n-form
-          :label-width="120"
-          :rules="passFormRules"
+          :label-width="140"
+          :rules="twmemberFormRules"
           label-placement="left"
           ref="formRef"
           class="py-8"
         >
-          <n-form-item label="新媒秀米账号" path="forwardTarget">
-            <n-input v-model:value="forwardTarget" placeholder="请输入新媒体的秀米账号" />
+          <n-form-item label="团委干事账号" path="TwMemberId">
+            <n-select
+              v-model:value="arrageMemberId"
+              :options="TwMemberOptions"
+              placeholder="选择负责审核的团委干事"
+              filterable
+              @update:value="onTwMemberSelected"
+            />
+          </n-form-item>
+          <n-form-item label="团委干事秀米账号" path="TwMemberSessionId">
+            <n-select
+              v-model:value="arrangeMemberSessionId"
+              :options="TwMemberSessionOptions"
+              placeholder="选择该干事的秀米账号"
+              filterable
+            />
           </n-form-item>
           <n-space justify="center">
-            <n-button type="primary" @click="doPassPostTW">确认通过</n-button>
+            <n-button type="primary" @click="doArrangeTwMember">确认通过</n-button>
           </n-space>
         </n-form>
       </n-card>
@@ -266,6 +312,7 @@
     SmileFilled,
     TeamOutlined,
     UserOutlined,
+WechatFilled,
   } from '@vicons/antd';
   import {
     getPostDetail,
@@ -273,8 +320,9 @@
     sendComment,
     passPostFDY,
     passPostTW,
+twArrangeTwMember,
   } from '@/api/post/post';
-  import { getOtherUserInfo } from '@/api/user/user';
+  import { getOtherUserInfo, getUserLists } from '@/api/user/user';
   import {
     NButton,
     NCollapse,
@@ -291,6 +339,8 @@
   import vueQr from 'vue-qr/src/packages/vue-qr.vue';
   import router from '@/router';
   import { FullCapNotion, PaperForwardNotion } from '@/constant/constant';
+import { getOtherUserSessions, getValidXiumiSessions } from '@/api/xiumi/xiumi';
+import { getPubaccs } from '@/api/pubacc/pubacc';
 
   const route = useRoute();
   const userStore = useUserStore();
@@ -337,7 +387,7 @@
             type: 'success',
             onClick: () => {
               // TODO: 打开用户详情
-              alert(JSON.stringify(row));
+              
             },
           },
           {
@@ -348,15 +398,57 @@
       },
     },
   ];
+  // 用于显示
+  const ForwardAccountColumns = [
+    {
+      title: '目标',
+      key: 'description',
+      resizable: true,
+    },
+    {
+      title: '秀米账号',
+      key: 'user',
+      resizable: true,
+      render(row, _index) {
+        return h(
+          NButton,
+          {
+            size: 'small',
+            type: 'success',
+            onClick: () => {
+              // TODO: 打开用户详情
+              window.open('https://xiumi.us/');
+            },
+          },
+          {
+            icon: renderIcon(WechatFilled),
+            default: `${row.user.username}(${row.user.description})`,
+          }
+        );
+      },
+    },
+  ];
 
   const XiumiSnapshotData: any = ref([]);
   const ResPeopleData: any = ref([]);
+  const ForwardAccountData: any = ref([]);
   const paperPreviewUrl = ref('');
   const coverPreviewUrl = ref('');
+  const TWpaperPreviewUrl = ref('');  // 团委/干事 公用账号上修改版本预览链接
+  const TWcoverPreviewUrl = ref('');  //团委/干事 账号上修改版本封面预览链接
   function openPaperPreviewUrl() {
     window.open(paperPreviewUrl.value);
   }
   function openPaperPreviewCover() {
+    console.log(coverPreviewUrl.value);
+    if (coverPreviewUrl.value == 'http://') {
+      dialog.info({
+        title: '提示',
+        content: '这篇推送没有设定封面',
+        positiveText: '确定',
+      });
+      return;
+    }
     window.open(coverPreviewUrl.value);
   }
   const postData: any = ref({
@@ -385,10 +477,34 @@
     TZB: '团支部',
     TwMember: '团委干事',
   };
+  const paperTwPreviewUrl = ref('');
+  function openTwPaperPreviewUrl() {
+    window.open(TWpaperPreviewUrl.value);
+  }
+  function openTwPaperPreviewCover() {
+    if(TWcoverPreviewUrl.value == 'http://'){
+      dialog.info({
+        title: '提示',
+        content: '这篇推送没有设定封面',
+        positiveText: '确定',
+      });
+      return;
+    }
+    window.open(TWcoverPreviewUrl.value);
+  }
   function getXiumiSnapshotData() {
     const xiumiInfoObj = JSON.parse(postData.value.XiumiPaperInfo);
     paperPreviewUrl.value = xiumiInfoObj.data.show_url;
     coverPreviewUrl.value = 'http://' + xiumiInfoObj.data.cover.replace('//', '');
+    if (Role == 'TwAdmin' && postData.value.TZBForwardPaperInfo) {
+      TWpaperPreviewUrl.value = JSON.parse(postData.value.TZBForwardPaperInfo).show_url;
+      TWcoverPreviewUrl.value = 'http://' + JSON.parse(postData.value.TZBForwardPaperInfo).cover.replace('//', '');
+      paperTwPreviewUrl.value = TWpaperPreviewUrl.value;
+    } else if(Role == 'TwMember' && postData.value.TWArrangeForwardPaperInfo) {
+      TWpaperPreviewUrl.value = JSON.parse(postData.value.TWArrangeForwardPaperInfo).show_url;
+      TWcoverPreviewUrl.value = 'http://' + JSON.parse(postData.value.TWArrangeForwardPaperInfo).cover.replace('//', '');
+      paperTwPreviewUrl.value = TWpaperPreviewUrl.value;
+    }
     XiumiSnapshotData.value.push({
       attr: '文章id',
       val: xiumiInfoObj.data.show_id,
@@ -424,6 +540,38 @@
         description: '负责审核干事',
         user: postData.value['TWMemberUser'].user,
       });
+  }
+  async function getForwardAccountData(){
+    if(Role == 'TwAdmin'){
+      const ForwardPaperAccountId = postData.value['TZBForwardPaperAccountId'];
+      if(!ForwardPaperAccountId) return;
+      const XiumiPubaccs = await getPubaccs();
+      for(let i=0;i<XiumiPubaccs.data.length;i++){
+        if(XiumiPubaccs.data[i]._id == ForwardPaperAccountId){
+          ForwardAccountData.value.push({
+            description: '团委公众账号存储至',
+            user: XiumiPubaccs.data[i],
+          });
+        }
+        break;
+      }
+    } else if(Role == 'TwMember'){
+      const TWArrangeForwardSessionId = postData.value['TWArrangeForwardSessionId'];
+      if(!TWArrangeForwardSessionId) return;
+      const SessionsInfo = await getValidXiumiSessions();
+      for(let i=0;i<SessionsInfo.data.length;i++){
+        if(SessionsInfo.data[i]._id == TWArrangeForwardSessionId){
+          ForwardAccountData.value.push({
+            description: '团委干事账号存储至',
+            user: {
+              username: SessionsInfo.data[i].XiumiUsername,
+              description: JSON.parse(SessionsInfo.data[i].UserInfo).user.nickname,
+            },
+          });
+          break;
+        }
+      }
+    }
   }
   function getTimelineItems() {
     const poststatusMap = {
@@ -527,6 +675,7 @@
       getXiumiSnapshotData();
       getResPeopleData();
       getTimelineItems();
+      await getForwardAccountData();
       const currentStepMap = {
         FDYCheck: 1,
         ToRevise: 1,
@@ -747,10 +896,98 @@
         message.error('请填写完整信息!');
       }
     });
-    const showModalArrange = ref(false);
   }
-
-  function doArrangeMember() {}
+  const showModalArrange = ref(false);
+  const TwMemberOptions: any = ref([]);
+  const TwMemberSessionOptions: any = ref([]);
+  const arrageMemberId = ref('');
+  const arrangeMemberSessionId = ref('');
+  getUserLists(JSON.stringify(['TwMember'])).then((res) => {
+    if (res.code == 200) {
+      for (let i = 0; i < res.data.length; i++) {
+        TwMemberOptions.value.push({
+          label: res.data[i].nickname,
+          value: res.data[i]._id,
+        });
+      }
+    } else {
+      message.error('无法加载团委干事列表!');
+    }
+  });
+  const twmemberFormRules = {
+    TwMemberId: {
+      required: true,
+      message: '干事账号不能为空!',
+      trigger: 'blur',
+      validator() {
+        const value = arrageMemberId.value;
+        if (!value) {
+          return new Error('干事账号不能为空!');
+        }
+        return true;
+      },
+    },
+    TwMemberSessionId: {
+      required: true,
+      message: '干事秀米账号不能为空!',
+      trigger: 'blur',
+      validator() {
+        const value = arrangeMemberSessionId.value;
+        if (!value) {
+          return new Error('干事秀米账号不能为空!');
+        }
+        return true;
+      },
+    },
+  };
+  function onTwMemberSelected() {
+    TwMemberSessionOptions.value = [];
+    getOtherUserSessions(arrageMemberId.value).then((res)=>{
+      if(res.code == 200){
+        for (let i = 0; i < res.data.length; i++) {
+          const uaObj = JSON.parse(res.data[i].UserInfo);
+          TwMemberSessionOptions.value.push({
+            label: `${uaObj.user.nickname}(${res.data[i].XiumiUsername})`,
+            value: res.data[i]._id,
+          });
+        }
+      }else{
+        message.error('获取该团委干事秀米账号失败！');
+      }
+    })
+  }
+  function doArrangeTwMember() {
+    twArrangeTwMember({
+      postId,
+      TwMemberId: arrageMemberId.value,
+      sessionId: arrangeMemberSessionId.value,
+    }).then((res) => {
+      if (res.code == 200) {
+        showModalArrange.value = false;
+        dialog.success({
+          title: '转存成功',
+          content: '转存成功，推送已转存至干事的秀米账号，请注意提醒对应干事审核！',
+          positiveText: '确定',
+          onPositiveClick: () => {
+            location.reload();
+          }
+        });
+      } else if(res.code == 500 && res.data) {
+        showModalArrange.value = false;
+        dialog.error({
+          title: '通过失败',
+          content: '转发文章失败，请查看详细信息: ' + getDetailError(res.data),
+          positiveText: '确定',
+        });
+      } else {
+        dialog.error({
+          title: '通过失败',
+          content: '转发文章失败，信息: ' + res['map_message'],
+          positiveText: '确定',
+        });
+      }
+    })
+  }
 </script>
 
 <style scoped>
@@ -763,5 +1000,8 @@
   .commentHeader {
     font-weight: 500;
     font-size: 16px;
+  }
+  .commentMargin {
+    margin-left: 30px;
   }
 </style>
