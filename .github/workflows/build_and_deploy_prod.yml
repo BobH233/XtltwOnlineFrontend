@@ -30,10 +30,9 @@ jobs:
         uses: easingthemes/ssh-deploy@main
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_KEY }}
-          ARGS: '-avzr --delete'
+          ARGS: '-avzr --delete --exclude=404.html --exclude=.htaccess --exclude=.user.ini'
           SOURCE: 'dist/'
           REMOTE_HOST: ${{ secrets.SERVER_IP }}
           REMOTE_USER: ${{ secrets.SERVER_USER }}
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
           TARGET: ${{ secrets.SERVER_PROD_PATH }}
-          EXCLUDE: "/404.html/, /.htaccess/, /.user.ini/"
