@@ -52,6 +52,6 @@ const setting = {
   //是否开启路由动画
   isPageAnimate: true,
   //路由动画类型
-  pageAnimateType: 'zoom-fade',
+  pageAnimateType: 'fade-scale',
 };
 export default setting;

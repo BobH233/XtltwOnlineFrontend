@@ -32,7 +32,7 @@
 
 <script lang="ts" setup>
   import { useUserStore } from '@/store/modules/user';
-  import { getPosts, deletePost, confirmTZB } from '@/api/post/post';
+  import { getPosts, deletePost, confirmTZB, twSetSended } from '@/api/post/post';
   import { getOtherUserInfo } from '@/api/user/user';
   import { useDialog, NTag, NSelect, useMessage } from 'naive-ui';
   import { reactive, h, ref } from 'vue';
@@ -145,6 +145,30 @@
             onClick: handleViewDetail.bind(null, record),
             ifShow: () => {
               return true;
+            },
+          },
+          {
+            label: '已发出',
+            onClick: () => {
+              dialog.warning({
+                title: '确认设置为已发送?',
+                content: '请确认公众号已经发出后再点击',
+                positiveText: '确认',
+                negativeText: '取消',
+                onPositiveClick: () => {
+                  twSetSended(record._id).then((res) => {
+                    if (res.code == 200) {
+                      message.success('设置申请为"已发出"成功！');
+                      actionRef.value.reload();
+                    } else {
+                      message.error(res['map_message']);
+                    }
+                  });
+                },
+              });
+            },
+            ifShow: () => {
+              return (Role == 'TwAdmin' || Role == 'TwMember') && record.PostStatus == 'Sending';
             },
           },
           {

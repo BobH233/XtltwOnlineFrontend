@@ -108,7 +108,11 @@
         </n-dropdown>
       </div>
       <!--设置-->
-      <div class="layout-header-trigger layout-header-trigger-min" @click="openSetting">
+      <div
+        class="layout-header-trigger layout-header-trigger-min"
+        @click="openSetting"
+        v-if="false"
+      >
         <n-tooltip placement="bottom-end">
           <template #trigger>
             <n-icon size="18" style="font-weight: bold">
@@ -283,11 +287,12 @@
           key: 1,
           disabled: true,
         },
+        /*
         {
           label: '个人设置',
           key: 3,
           icon: renderIcon(SettingOutlined),
-        },
+        },*/ // TODO: 等添加完个人设置的选项过后再启用
         {
           label: '退出登录',
           key: 2,
