@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - prod
-      - main #记得删除
   pull_request:
     types:
       - closed
