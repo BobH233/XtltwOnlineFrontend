@@ -44,10 +44,19 @@
   import { ref, reactive } from 'vue';
   import { useMessage, useDialog } from 'naive-ui';
   import { changeMyPassword } from '@/api/user/user';
+  import { useRoute } from 'vue-router';
 
   const dialog = useDialog();
   const formRef: any = ref(null);
   const message = useMessage();
+  const route = useRoute();
+  if(route.query.tipChange == 1){
+    dialog.warning({
+      title: '请及时修改默认密码',
+      content: '为了你的账号安全，请及时修改你的默认密码！若已修改，请忽略这个信息。',
+      positiveText: '确认',
+    });
+  }
   const defaultValueRef = () => ({
     oldPassword: '',
     newPassword: '',

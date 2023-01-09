@@ -114,7 +114,7 @@
             const toPath = decodeURIComponent((route.query?.redirect || '/') as string);
             message.success('登录成功，即将进入系统');
             if (user.forceChangePassword) {
-              location.href = '/#/account/password';
+              location.href = '/#/account/password?tipChange=1';
               location.reload();
             }
             if (route.name === LOGIN_NAME) {
