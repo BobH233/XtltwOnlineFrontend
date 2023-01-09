@@ -398,3 +398,28 @@ export function twArrangeTwMember(params: any): Promise<confirmTZBResponseModel>
       });
   });
 }
+
+export function twSetSended(postId): Promise<requireRecheckResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<requireRecheckResponseModel>(
+        {
+          url: API_URL + '/api/post/tw/setsended',
+          method: 'POST',
+          params: { postId },
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
