@@ -9,9 +9,17 @@ import pkg from './package.json';
 import { format } from 'date-fns';
 const { dependencies, devDependencies, name, version } = pkg;
 
+const getZoneTime = (offset) => {
+  const localtime = new Date();
+  const localmesc = localtime.getTime();
+  const localOffset = localtime.getTimezoneOffset() * 60000;
+  const utc = localOffset + localmesc;
+  const calctime = utc + 3600000 * offset;
+  return new Date(calctime);
+}
 const __APP_INFO__ = {
   pkg: { dependencies, devDependencies, name, version },
-  lastBuildTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+  lastBuildTime: format(getZoneTime(8), 'yyyy-MM-dd HH:mm:ss'),
 };
 
 function pathResolve(dir: string) {
