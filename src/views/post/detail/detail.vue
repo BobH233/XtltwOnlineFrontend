@@ -222,6 +222,7 @@
           <n-space>
             <QuillEditor
               ref="quillEditor"
+              @ready="readyQuill"
               :options="EditorOptions"
               v-model:content="CommentContent"
               style="height: 350px"
@@ -339,8 +340,9 @@ twArrangeTwMember,
   import vueQr from 'vue-qr/src/packages/vue-qr.vue';
   import router from '@/router';
   import { FullCapNotion, PaperForwardNotion } from '@/constant/constant';
-import { getOtherUserSessions, getValidXiumiSessions } from '@/api/xiumi/xiumi';
-import { getPubaccs } from '@/api/pubacc/pubacc';
+  import { getOtherUserSessions, getValidXiumiSessions } from '@/api/xiumi/xiumi';
+  import { getPubaccs } from '@/api/pubacc/pubacc';
+  import { BindQuillUploadImageInterface } from './quillImgUpload';
 
   const route = useRoute();
   const userStore = useUserStore();
@@ -713,32 +715,39 @@ import { getPubaccs } from '@/api/pubacc/pubacc';
       notFound.value = true;
     }
   });
-
   const EditorOptions = reactive({
     modules: {
-      toolbar: [
-        ['bold', 'italic', 'underline', 'strike'], // toggled buttons
-        ['blockquote', 'code-block'],
+      toolbar: {
+        container: [
+          ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+          ['blockquote', 'code-block'],
 
-        [{ header: 1 }, { header: 2 }], // custom button values
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-        [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+          [{ header: 1 }, { header: 2 }], // custom button values
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+          [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
 
-        [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
 
-        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-        [{ font: [] }],
-        [{ align: [] }],
-        ['clean'],
-        ['image'],
-      ],
+          [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+          [{ font: [] }],
+          [{ align: [] }],
+          ['clean'],
+          ['image'],
+        ],
+        handlers: {
+          'image': function (_value) {
+            message.info('直接使用ctrl+v在文本框中粘贴你的图片即可');
+          }
+        }
+      }
     },
     theme: 'snow',
     placeholder: '在这里输入你的评论，支持富文本。',
   });
   const quillEditor = ref();
+  window['quill'] = quillEditor;
   const CommentContent = ref('');
   function doMakeComment() {
     sendComment(Role, {
@@ -987,6 +996,10 @@ import { getPubaccs } from '@/api/pubacc/pubacc';
         });
       }
     })
+  }
+  // 绑定图片上传接口
+  function readyQuill() {
+    BindQuillUploadImageInterface(message, quillEditor);
   }
 </script>
 
