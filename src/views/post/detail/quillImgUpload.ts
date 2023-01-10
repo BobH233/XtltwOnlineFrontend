@@ -2,7 +2,7 @@
 
 import { MessageApiInjection } from 'naive-ui/es/message/src/MessageProvider';
 import { uploadImage } from '@/api/upload/upload';
-import * as CryptoJS from 'crypto-js';
+import { SHA1 } from './SHA1';
 
 export function UploadFileData(form: FormData): Promise<any> {
   return new Promise<any>((resolve, reject) => {
@@ -20,7 +20,7 @@ function GetFileHash(file: File): Promise<string> {
   return new Promise<string>((resolve, _reject) => {
     const reader = new FileReader();
     reader.onload = (fuckyou: any) => {
-      const hash = CryptoJS.SHA1(fuckyou.target.result).toString();
+      const hash = SHA1(fuckyou.target.result);
       resolve(hash);
     };
     reader.readAsDataURL(file);
