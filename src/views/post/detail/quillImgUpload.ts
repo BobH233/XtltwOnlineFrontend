@@ -55,6 +55,10 @@ export function BindQuillUploadImageInterface(message: MessageApiInjection, quil
               .then((res) => {
                 if (res.code == 200) {
                   const length = quill.getSelection().index; //光标位置
+                  // 如果不是gif则默认使用压缩减小体积
+                  if (file.type !== 'image/gif') {
+                    res.url += '/compress';
+                  }
                   quill.insertEmbed(length, 'image', res.url);
                   hash2UrlMap[hash] = res.url;
                   quill.setSelection(length + 1);
