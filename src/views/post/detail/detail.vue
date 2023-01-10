@@ -737,8 +737,8 @@ twArrangeTwMember,
           ['image'],
         ],
         handlers: {
-          'image': function (value) {
-            console.log(value);
+          'image': function (_value) {
+            message.info('直接使用ctrl+v在文本框中粘贴你的图片即可');
           }
         }
       }
