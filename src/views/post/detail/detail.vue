@@ -55,7 +55,7 @@
               :data="ForwardAccountData"
               :pagination="false"
               :bordered="true"
-              v-show="(Role == 'TwAdmin' || Role == 'TwMember')"
+              v-show="Role == 'TwAdmin' || Role == 'TwMember'"
             />
           </n-space>
         </template>
@@ -80,7 +80,9 @@
     >
       <n-card :bordered="false" title="审核检查入口">
         <n-space vertical>
-          <div>这是团支部转存的原始版本，假如团委进行了修改，请在下面”推送修改检查“查看修改后的结果</div>
+          <div
+            >这是团支部转存的原始版本，假如团委进行了修改，请在下面”推送修改检查“查看修改后的结果</div
+          >
           <n-space>
             <n-button n-button @click="openPaperPreviewUrl" type="primary">打开预览链接</n-button>
             <n-button @click="openPaperPreviewCover" v-show="coverPreviewUrl != ''"
@@ -97,12 +99,19 @@
     </div>
     <div
       class="cardMargin"
-      v-show="!notFound && !loading && ((Role == 'TwMember' && postData.PostStatus == 'TWChecking') || (Role == 'TwAdmin' && postData.PostStatus == 'TWToCheck'))"
+      v-show="
+        !notFound &&
+        !loading &&
+        ((Role == 'TwMember' && postData.PostStatus == 'TWChecking') ||
+          (Role == 'TwAdmin' && postData.PostStatus == 'TWToCheck'))
+      "
     >
       <n-card :bordered="false" title="推送修改检查入口">
         <n-space vertical>
-          <div>假如你在待审核的帖子上做了修改，请在秀米中申请审核，然后再在这里预览查看是否更新</div>
-          <strong style="color:red">请确保这里的预览已经生效后，再进行通过！</strong>
+          <div
+            >假如你在待审核的帖子上做了修改，请在秀米中申请审核，然后再在这里预览查看是否更新</div
+          >
+          <strong style="color: red">请确保这里的预览已经生效后，再进行通过！</strong>
           <n-space>
             <n-button n-button @click="openTwPaperPreviewUrl" type="primary">打开预览链接</n-button>
             <n-button @click="openTwPaperPreviewCover" v-show="coverPreviewUrl != ''"
@@ -167,9 +176,11 @@
               <template #description>
                 <div class="commentDate">{{ comment.DateString }}</div>
               </template>
-              <p class="ql-snow commentMargin">
-                <p class="ql-editor" v-html="comment.HTMLContent"></p>
-              </p>
+              <div class="ql-snow commentMargin">
+                <div class="ql-editor">
+                  <div class="commentLimiter" v-html="comment.HTMLContent"></div>
+                </div>
+              </div>
             </n-thing>
           </n-list-item>
         </n-list>
@@ -313,7 +324,7 @@
     SmileFilled,
     TeamOutlined,
     UserOutlined,
-WechatFilled,
+    WechatFilled,
   } from '@vicons/antd';
   import {
     getPostDetail,
@@ -321,7 +332,7 @@ WechatFilled,
     sendComment,
     passPostFDY,
     passPostTW,
-twArrangeTwMember,
+    twArrangeTwMember,
   } from '@/api/post/post';
   import { getOtherUserInfo, getUserLists } from '@/api/user/user';
   import {
@@ -389,7 +400,6 @@ twArrangeTwMember,
             type: 'success',
             onClick: () => {
               // TODO: 打开用户详情
-              
             },
           },
           {
@@ -436,8 +446,8 @@ twArrangeTwMember,
   const ForwardAccountData: any = ref([]);
   const paperPreviewUrl = ref('');
   const coverPreviewUrl = ref('');
-  const TWpaperPreviewUrl = ref('');  // 团委/干事 公用账号上修改版本预览链接
-  const TWcoverPreviewUrl = ref('');  //团委/干事 账号上修改版本封面预览链接
+  const TWpaperPreviewUrl = ref(''); // 团委/干事 公用账号上修改版本预览链接
+  const TWcoverPreviewUrl = ref(''); //团委/干事 账号上修改版本封面预览链接
   function openPaperPreviewUrl() {
     window.open(paperPreviewUrl.value);
   }
@@ -484,7 +494,7 @@ twArrangeTwMember,
     window.open(TWpaperPreviewUrl.value);
   }
   function openTwPaperPreviewCover() {
-    if(TWcoverPreviewUrl.value == 'http://'){
+    if (TWcoverPreviewUrl.value == 'http://') {
       dialog.info({
         title: '提示',
         content: '这篇推送没有设定封面',
@@ -500,11 +510,13 @@ twArrangeTwMember,
     coverPreviewUrl.value = 'http://' + xiumiInfoObj.data.cover.replace('//', '');
     if (Role == 'TwAdmin' && postData.value.TZBForwardPaperInfo) {
       TWpaperPreviewUrl.value = JSON.parse(postData.value.TZBForwardPaperInfo).show_url;
-      TWcoverPreviewUrl.value = 'http://' + JSON.parse(postData.value.TZBForwardPaperInfo).cover.replace('//', '');
+      TWcoverPreviewUrl.value =
+        'http://' + JSON.parse(postData.value.TZBForwardPaperInfo).cover.replace('//', '');
       paperTwPreviewUrl.value = TWpaperPreviewUrl.value;
-    } else if(Role == 'TwMember' && postData.value.TWArrangeForwardPaperInfo) {
+    } else if (Role == 'TwMember' && postData.value.TWArrangeForwardPaperInfo) {
       TWpaperPreviewUrl.value = JSON.parse(postData.value.TWArrangeForwardPaperInfo).show_url;
-      TWcoverPreviewUrl.value = 'http://' + JSON.parse(postData.value.TWArrangeForwardPaperInfo).cover.replace('//', '');
+      TWcoverPreviewUrl.value =
+        'http://' + JSON.parse(postData.value.TWArrangeForwardPaperInfo).cover.replace('//', '');
       paperTwPreviewUrl.value = TWpaperPreviewUrl.value;
     }
     XiumiSnapshotData.value.push({
@@ -543,13 +555,13 @@ twArrangeTwMember,
         user: postData.value['TWMemberUser'].user,
       });
   }
-  async function getForwardAccountData(){
-    if(Role == 'TwAdmin'){
+  async function getForwardAccountData() {
+    if (Role == 'TwAdmin') {
       const ForwardPaperAccountId = postData.value['TZBForwardPaperAccountId'];
-      if(!ForwardPaperAccountId) return;
+      if (!ForwardPaperAccountId) return;
       const XiumiPubaccs = await getPubaccs();
-      for(let i=0;i<XiumiPubaccs.data.length;i++){
-        if(XiumiPubaccs.data[i]._id == ForwardPaperAccountId){
+      for (let i = 0; i < XiumiPubaccs.data.length; i++) {
+        if (XiumiPubaccs.data[i]._id == ForwardPaperAccountId) {
           ForwardAccountData.value.push({
             description: '团委公众账号存储至',
             user: XiumiPubaccs.data[i],
@@ -557,12 +569,12 @@ twArrangeTwMember,
         }
         break;
       }
-    } else if(Role == 'TwMember'){
+    } else if (Role == 'TwMember') {
       const TWArrangeForwardSessionId = postData.value['TWArrangeForwardSessionId'];
-      if(!TWArrangeForwardSessionId) return;
+      if (!TWArrangeForwardSessionId) return;
       const SessionsInfo = await getValidXiumiSessions();
-      for(let i=0;i<SessionsInfo.data.length;i++){
-        if(SessionsInfo.data[i]._id == TWArrangeForwardSessionId){
+      for (let i = 0; i < SessionsInfo.data.length; i++) {
+        if (SessionsInfo.data[i]._id == TWArrangeForwardSessionId) {
           ForwardAccountData.value.push({
             description: '团委干事账号存储至',
             user: {
@@ -737,11 +749,11 @@ twArrangeTwMember,
           ['image'],
         ],
         handlers: {
-          'image': function (_value) {
+          image: function (_value) {
             message.info('直接使用ctrl+v在文本框中粘贴你的图片即可');
-          }
-        }
-      }
+          },
+        },
+      },
     },
     theme: 'snow',
     placeholder: '在这里输入你的评论，支持富文本。',
@@ -951,8 +963,8 @@ twArrangeTwMember,
   };
   function onTwMemberSelected() {
     TwMemberSessionOptions.value = [];
-    getOtherUserSessions(arrageMemberId.value).then((res)=>{
-      if(res.code == 200){
+    getOtherUserSessions(arrageMemberId.value).then((res) => {
+      if (res.code == 200) {
         for (let i = 0; i < res.data.length; i++) {
           const uaObj = JSON.parse(res.data[i].UserInfo);
           TwMemberSessionOptions.value.push({
@@ -960,10 +972,10 @@ twArrangeTwMember,
             value: res.data[i]._id,
           });
         }
-      }else{
+      } else {
         message.error('获取该团委干事秀米账号失败！');
       }
-    })
+    });
   }
   function doArrangeTwMember() {
     twArrangeTwMember({
@@ -979,9 +991,9 @@ twArrangeTwMember,
           positiveText: '确定',
           onPositiveClick: () => {
             location.reload();
-          }
+          },
         });
-      } else if(res.code == 500 && res.data) {
+      } else if (res.code == 500 && res.data) {
         showModalArrange.value = false;
         dialog.error({
           title: '通过失败',
@@ -995,7 +1007,7 @@ twArrangeTwMember,
           positiveText: '确定',
         });
       }
-    })
+    });
   }
   // 绑定图片上传接口
   function readyQuill() {
@@ -1016,5 +1028,9 @@ twArrangeTwMember,
   }
   .commentMargin {
     margin-left: 30px;
+  }
+  .commentLimiter >>> img {
+    max-width: 50%;
+    box-shadow: 0px 0px 4px 3px #13131336;
   }
 </style>
