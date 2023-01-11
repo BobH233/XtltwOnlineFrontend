@@ -5,6 +5,7 @@ import { RouteRecordRaw } from 'vue-router';
 import { Layout } from '@/router/constant';
 import { DatabaseOutlined, LockOutlined, UserOutlined } from '@vicons/antd';
 import { renderIcon } from '@/utils/index';
+import { FingerPrint } from '@vicons/ionicons5';
 
 /**
  * @param name 路由名称, 必须设置,且不能重名
@@ -48,6 +49,16 @@ const routes: Array<RouteRecordRaw> = [
           permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
         },
         component: () => import('@/views/account/session/session.vue'),
+      },
+      {
+        path: 'fido2',
+        name: 'account_fido2',
+        meta: {
+          title: '生物验证',
+          icon: renderIcon(FingerPrint),
+          permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
+        },
+        component: () => import('@/views/account/fido2/fido2.vue'),
       },
     ],
   },

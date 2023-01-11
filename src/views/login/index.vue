@@ -49,6 +49,11 @@
               登录
             </n-button>
           </n-form-item>
+          <n-form-item>
+            <n-button type="success" @click="handleFido2" size="large" :loading="loading" block>
+              生物验证登录
+            </n-button>
+          </n-form-item>
         </n-form>
       </div>
     </div>
@@ -63,6 +68,8 @@
   import { ResultEnum } from '@/enums/httpEnum';
   import { PersonOutline, LockClosedOutline } from '@vicons/ionicons5';
   import { PageEnum } from '@/enums/pageEnum';
+  import { fido2GetLoginOptions, fido2Login } from '@/api/user/user';
+  import { _arrayBufferToBase64, _base64ToArrayBuffer } from '@/utils';
   interface FormState {
     username: string;
     password: string;
@@ -92,7 +99,55 @@
 
   const router = useRouter();
   const route = useRoute();
-
+  const handleFido2 = async (e) => {
+    e.preventDefault();
+    if (!formInline.username || !formInline.username.trim()) {
+      message.error('你需要提供你的用户名以生物验证登录!');
+      return;
+    }
+    const loginOptionsRes = await fido2GetLoginOptions(formInline.username);
+    if (loginOptionsRes.code != 200) {
+      message.error(loginOptionsRes['map_message']);
+      return;
+    }
+    let loginOptions = loginOptionsRes.loginOptions;
+    loginOptions.challenge = _base64ToArrayBuffer(loginOptions.challenge);
+    for (let i = 0; i < loginOptions.allowCredentials.length; i++) {
+      loginOptions.allowCredentials[i].id = _base64ToArrayBuffer(
+        loginOptions.allowCredentials[i].id
+      );
+    }
+    navigator.credentials.get({ publicKey: loginOptions }).then((credential: any) => {
+      const passableCredential = {
+        id: credential?.id,
+        rawId: _arrayBufferToBase64(credential.rawId),
+        response: {
+          clientDataJSON: _arrayBufferToBase64(credential.response.clientDataJSON),
+          authenticatorData: _arrayBufferToBase64(credential.response.authenticatorData),
+          signature: _arrayBufferToBase64(credential.response.signature),
+          userHandle: _arrayBufferToBase64(credential.rawId),
+        },
+        type: credential.type,
+      };
+      fido2Login({
+        username: formInline.username,
+        loginParam: JSON.stringify(passableCredential),
+      }).then(async (res) => {
+        if (res.code == 200) {
+          message.success('登录成功，即将进入系统');
+          await userStore.fido2Logined(res['user']);
+          const toPath = decodeURIComponent((route.query?.redirect || '/') as string);
+          if (route.name === LOGIN_NAME) {
+            router.replace('/');
+          } else {
+            router.replace(toPath);
+          }
+        } else {
+          message.error(res['map_message']);
+        }
+      });
+    });
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     formRef.value.validate(async (errors) => {

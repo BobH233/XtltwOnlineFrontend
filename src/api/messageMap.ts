@@ -24,6 +24,8 @@ const MessageMap = {
   'Forward paper failed, see reasons.': '转存文章失败，详情见错误信息',
   'Successfully pass the post!': '成功通过了文章',
   'Could not find valid XiumiSession!': '无法找到有效的秀米账号',
+  'Cannot find this user!': '无法找到这个用户',
+  'Cannot find this credential!': '无法找到这个凭据，请选择正确的登录方式',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {
