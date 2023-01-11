@@ -7,6 +7,9 @@ import { OUTPUT_DIR } from './build/constant';
 import { createProxy } from './build/vite/proxy';
 import pkg from './package.json';
 import { format } from 'date-fns';
+import * as fs from 'fs';
+import * as path from 'path';
+
 const { dependencies, devDependencies, name, version } = pkg;
 
 const getZoneTime = (offset) => {
@@ -67,6 +70,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       host: true,
       port: VITE_PORT,
       proxy: createProxy(VITE_PROXY),
+      https: {
+        cert: fs.readFileSync(path.join(__dirname, 'keys/cert.pem')),
+        key: fs.readFileSync(path.join(__dirname, 'keys/key.pem')),
+      },
+
       // proxy: {
       //     '/api': {
       //         target: '',
