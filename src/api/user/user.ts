@@ -42,6 +42,18 @@ export interface UserListResponseModel<T = any> {
   data: T[];
 }
 
+export interface fido2RegOptionsResponseModel<T = any> {
+  code: number;
+  message: string;
+  regOptions: T;
+}
+
+export interface fido2LoginOptionsResponseModel<T = any> {
+  code: number;
+  message: string;
+  loginOptions: T;
+}
+
 const UserInfoCache = {};
 
 export function login(params): Promise<LoginResponseModel> {
@@ -261,6 +273,145 @@ export function getUserLists(filter): Promise<UserListResponseModel> {
         RespHook(resp, () => {
           resolve(resp);
         });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function fido2GetRegOptions(): Promise<fido2RegOptionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<fido2RegOptionsResponseModel>(
+        {
+          url: API_URL + '/api/user/fido2/request',
+          method: 'POST',
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function fido2Register(params): Promise<fido2RegOptionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<fido2RegOptionsResponseModel>(
+        {
+          url: API_URL + '/api/user/fido2/register',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function fido2GetLoginOptions(username): Promise<fido2LoginOptionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<fido2LoginOptionsResponseModel>(
+        {
+          url: API_URL + `/api/user/fido2/login?username=${username}`,
+          method: 'GET',
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        resolve(resp);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function fido2Login(params): Promise<fido2LoginOptionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<fido2LoginOptionsResponseModel>(
+        {
+          url: API_URL + '/api/user/fido2/login',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        resolve(resp);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function fido2GetCredentials(): Promise<SessionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<SessionsResponseModel>(
+        {
+          url: API_URL + '/api/user/fido2/credentials',
+          method: 'GET',
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        resolve(resp);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function fido2DeleteCredential(id): Promise<SessionsResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<SessionsResponseModel>(
+        {
+          url: API_URL + '/api/user/fido2/delete',
+          method: 'POSt',
+          params: { id },
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        resolve(resp);
       })
       .catch((err) => {
         reject(err);

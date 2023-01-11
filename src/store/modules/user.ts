@@ -64,6 +64,19 @@ export const useUserStore = defineStore({
     setUserInfo(info) {
       this.info = info;
     },
+    async fido2Logined(user) {
+      try {
+        const ex = 24 * 60 * 60;
+        storage.set(ACCESS_TOKEN, user._id, ex); // 因为有cookie校验，所以这里直接拿用户id了
+        storage.set(CURRENT_USER, user, ex);
+        storage.set(IS_LOCKSCREEN, false);
+        this.setToken(user._id);
+        this.setUserInfo(user);
+        return Promise.resolve();
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    },
     // 登录
     async login(userInfo) {
       try {
