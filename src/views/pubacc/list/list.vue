@@ -43,6 +43,7 @@
   import { columns } from './columns';
   import { useRouter } from 'vue-router';
   import { PlusCircleOutlined } from '@vicons/antd';
+  import { safeDeleteSended } from '@/api/xiumi/xiumi';
 
   const dialog = useDialog();
   const message = useMessage();
@@ -71,7 +72,7 @@
   };
 
   const actionColumn = reactive({
-    width: 80,
+    width: 200,
     title: '操作',
     key: 'action',
     fixed: 'right',
@@ -94,6 +95,38 @@
                       actionRef.value.reload();
                     } else {
                       message.error(res['map_message']);
+                    }
+                  });
+                },
+              });
+            },
+            ifShow: () => {
+              return true;
+            },
+          },
+          {
+            label: '安全清理',
+            onClick: () => {
+              dialog.warning({
+                title: '确认安全清理',
+                content: '系统会将此账号所有已发出的申请对应的转存图文删除，您可以放心删除！',
+                positiveText: '确认',
+                negativeText: '取消',
+                onPositiveClick: () => {
+                  message.info('正在清理，请稍等...');
+                  safeDeleteSended(record._id).then((res) => {
+                    if (res.code == 200) {
+                      dialog.success({
+                        title: '清理成功',
+                        content: `有${res.data.deleteCount}篇推送可删除，成功删除了${res.data.successCount}篇！`,
+                        positiveText: '确认',
+                      });
+                    } else {
+                      dialog.error({
+                        title: '清理失败',
+                        content: res['map_message'],
+                        positiveText: '确认',
+                      });
                     }
                   });
                 },
