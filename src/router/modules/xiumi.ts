@@ -26,6 +26,7 @@ const routes: Array<RouteRecordRaw> = [
       title: '秀米',
       icon: renderIcon(WechatFilled),
       permissions: ['TwAdmin', 'TZB', 'TwMember'],
+      sort: 7,
     },
     children: [
       {

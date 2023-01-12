@@ -27,7 +27,7 @@ const routes: Array<RouteRecordRaw> = [
       title: '账号安全',
       icon: renderIcon(UserOutlined),
       permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
-      sort: 10,
+      sort: 9,
     },
     children: [
       {

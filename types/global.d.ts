@@ -16,6 +16,7 @@ declare global {
       devDependencies: Recordable<string>;
     };
     lastBuildTime: string;
+    changeLog: string;
   };
   // declare interface Window {
   //   // Global vue app instance

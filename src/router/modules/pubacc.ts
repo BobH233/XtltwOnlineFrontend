@@ -26,6 +26,7 @@ const routes: Array<RouteRecordRaw> = [
       title: '公用转存账号',
       icon: renderIcon(HddFilled),
       permissions: ['TwAdmin'],
+      sort: 5,
     },
     children: [
       {

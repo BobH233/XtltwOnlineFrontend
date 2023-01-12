@@ -27,6 +27,7 @@ const routes: Array<RouteRecordRaw> = [
       icon: renderIcon(ClockCircleFilled),
       permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
       keepAlive: true,
+      sort: 3,
     },
     children: [
       {
