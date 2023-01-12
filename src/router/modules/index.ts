@@ -3,8 +3,9 @@
 */
 import { RouteRecordRaw } from 'vue-router';
 import { Layout } from '@/router/constant';
-import { BugFilled } from '@vicons/antd';
+import { DatabaseOutlined, FileTextFilled, HomeFilled, LockOutlined, UserOutlined } from '@vicons/antd';
 import { renderIcon } from '@/utils/index';
+import { FingerPrint } from '@vicons/ionicons5';
 
 /**
  * @param name 路由名称, 必须设置,且不能重名
@@ -19,26 +20,26 @@ import { renderIcon } from '@/utils/index';
  * */
 const routes: Array<RouteRecordRaw> = [
   {
-    path: '/bugreport',
-    name: 'bugreport',
+    path: '/index',
+    name: 'IndexPage',
     component: Layout,
     meta: {
-      title: '漏洞反馈',
-      icon: renderIcon(BugFilled),
+      title: '首页',
+      icon: renderIcon(HomeFilled),
       permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
-      sort: 11,
+      sort: 1,
     },
     children: [
       {
-        path: '',
-        name: 'bugreport_main',
+        path: 'changelog',
+        name: 'index_changelog',
         meta: {
-          title: '漏洞反馈',
-          icon: renderIcon(BugFilled),
+          title: '更新日志',
+          icon: renderIcon(FileTextFilled),
           permissions: ['FDY', 'TwAdmin', 'TZB', 'TwMember'],
         },
-        component: () => import('@/views/bugreport/bugreport.vue'),
-      },
+        component: () => import('@/views/index/changelog/changelog.vue'),
+      }
     ],
   },
 ];

@@ -43,6 +43,16 @@ export interface XiumiRencentPapaerResponseModel<T = any> {
   data: T[];
 }
 
+export interface XiumiSafeDeleteSendedPaperResponseModel {
+  code: number;
+  message: string;
+  data: {
+    deleteCount: number;
+    successCount: number;
+    deletedPaper: string[];
+  };
+}
+
 export function getValidXiumiSessions(): Promise<XiumiSessionsResponseModel> {
   return new Promise((resolve, reject) => {
     http
@@ -171,6 +181,31 @@ export function getOtherUserSessions(userId): Promise<XiumiRencentPapaerResponse
           url: API_URL + '/api/xiumi/getUserSessions',
           method: 'POST',
           params: { userId },
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function safeDeleteSended(sessionId): Promise<XiumiSafeDeleteSendedPaperResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<XiumiSafeDeleteSendedPaperResponseModel>(
+        {
+          url: API_URL + '/api/xiumi/safeDeleteSended',
+          method: 'POST',
+          params: { sessionId },
         },
         {
           isTransformResponse: false,

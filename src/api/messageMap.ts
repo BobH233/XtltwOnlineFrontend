@@ -26,6 +26,9 @@ const MessageMap = {
   'Could not find valid XiumiSession!': '无法找到有效的秀米账号',
   'Cannot find this user!': '无法找到这个用户',
   'Cannot find this credential!': '无法找到这个凭据，请选择正确的登录方式',
+  'No valid Xiumi Session. Try update you xiumi sessions!':
+    '没有合适的秀米账号绑定，请更新秀米账号绑定重试！',
+  'Invalid SessionId or expired session.': '非法的Id',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

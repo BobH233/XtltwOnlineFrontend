@@ -45,24 +45,17 @@ export const columns = [
     key: 'description',
   },
   {
-    title: '添加日期',
-    key: 'AddDate',
-    render(row) {
-      const lastDate = new Date(parseInt(row.AddDate));
-      return dateFormat('YYYY-mm-dd HH:MM:SS', lastDate);
-    },
-  },
-  {
     title: '满存状态',
     key: 'LastIsFull',
     render(row) {
+      const capText = `(${row.curPaperCnt}/${row.maxPaperCnt})`;
       return h(
         NTag,
         {
           type: row.LastIsFull ? 'error' : 'success',
         },
         {
-          default: row.LastIsFull ? '已满' : '空闲',
+          default: row.LastIsFull ? '已满' + capText : '空闲' + capText,
           icon: row.LastIsFull ? renderIcon(ExclamationCircleFilled) : renderIcon(SmileFilled),
         }
       );

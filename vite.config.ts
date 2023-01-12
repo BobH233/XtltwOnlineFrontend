@@ -9,6 +9,7 @@ import pkg from './package.json';
 import { format } from 'date-fns';
 import * as fs from 'fs';
 import * as path from 'path';
+import { CHANGELOG } from './changelog';
 
 const { dependencies, devDependencies, name, version } = pkg;
 
@@ -19,10 +20,11 @@ const getZoneTime = (offset) => {
   const utc = localOffset + localmesc;
   const calctime = utc + 3600000 * offset;
   return new Date(calctime);
-}
+};
 const __APP_INFO__ = {
   pkg: { dependencies, devDependencies, name, version },
   lastBuildTime: format(getZoneTime(8), 'yyyy-MM-dd HH:mm:ss'),
+  changeLog: JSON.stringify(CHANGELOG),
 };
 
 function pathResolve(dir: string) {
