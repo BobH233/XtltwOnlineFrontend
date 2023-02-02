@@ -29,6 +29,7 @@ const MessageMap = {
   'No valid Xiumi Session. Try update you xiumi sessions!':
     '没有合适的秀米账号绑定，请更新秀米账号绑定重试！',
   'Invalid SessionId or expired session.': '非法的Id',
+  'Username is conflicted': '用户名冲突',
 };
 export function MapMessage(message: string) {
   if (MessageMap.hasOwnProperty(message)) {

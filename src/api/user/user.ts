@@ -30,6 +30,12 @@ export interface ChangePasswordResponseModel {
   message: string;
 }
 
+export interface CreateUserResponseModel {
+  code: number;
+  message: string;
+  user_info: any;
+}
+
 export interface SessionsResponseModel<T = any> {
   code: number;
   message: string;
@@ -163,6 +169,31 @@ export function changeMyPassword(params: any): Promise<ChangePasswordResponseMod
       .request<ChangePasswordResponseModel>(
         {
           url: API_URL + '/api/user/changeMyPassword',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function changeUserPassword(params: any): Promise<ChangePasswordResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<ChangePasswordResponseModel>(
+        {
+          url: API_URL + '/api/user/changeUserPassword',
           method: 'POST',
           params,
         },
@@ -412,6 +443,31 @@ export function fido2DeleteCredential(id): Promise<SessionsResponseModel> {
       .then((resp) => {
         resp['map_message'] = MapMessage(resp.message);
         resolve(resp);
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+}
+
+export function createUser(params: any): Promise<CreateUserResponseModel> {
+  return new Promise((resolve, reject) => {
+    http
+      .request<CreateUserResponseModel>(
+        {
+          url: API_URL + '/api/user/createUser',
+          method: 'POST',
+          params,
+        },
+        {
+          isTransformResponse: false,
+        }
+      )
+      .then((resp) => {
+        resp['map_message'] = MapMessage(resp.message);
+        RespHook(resp, () => {
+          resolve(resp);
+        });
       })
       .catch((err) => {
         reject(err);
