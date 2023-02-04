@@ -27,8 +27,17 @@ export function createVitePlugins(viteEnv: ViteEnv, isBuild: boolean, prodMock) 
     VitePWA({
       manifest: {
         name: '团委在线审核平台',
+        short_name: '团委在线审核平台',
         description: '徐特立团委在线审核平台',
         theme_color: '#2d8cf0',
+        shortcuts: [
+          {
+            short_name: '审核列表',
+            url: '#/post/list',
+            name: '审核列表',
+            icons: [],
+          },
+        ],
         icons: [
           {
             src: '/512x512.png',
