@@ -8,6 +8,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx';
 import { configHtmlPlugin } from './html';
 import { configMockPlugin } from './mock';
 import { configCompressPlugin } from './compress';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export function createVitePlugins(viteEnv: ViteEnv, isBuild: boolean, prodMock) {
   const { VITE_USE_MOCK, VITE_BUILD_COMPRESS, VITE_BUILD_COMPRESS_DELETE_ORIGIN_FILE } = viteEnv;
@@ -22,6 +23,34 @@ export function createVitePlugins(viteEnv: ViteEnv, isBuild: boolean, prodMock) 
     Components({
       dts: true,
       resolvers: [NaiveUiResolver()],
+    }),
+    VitePWA({
+      manifest: {
+        name: '团委在线审核平台',
+        description: '徐特立团委在线审核平台',
+        theme_color: '#2d8cf0',
+        icons: [
+          {
+            src: '/512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+          {
+            src: '/512x512.png',
+            sizes: '60x60',
+            type: 'image/png',
+          },
+          {
+            src: '/512x512.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+        ],
+      },
+      registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+      },
     }),
   ];
 
