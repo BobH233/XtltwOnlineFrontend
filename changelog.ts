@@ -11,4 +11,8 @@ export const CHANGELOG = [
     version: '1.0.6beta',
     description: '新增pwa应用添加功能，准备内测',
   },
+  {
+    version: '1.0.7beta',
+    description: '修复生物验证登录时无法记住登录一个月的bug',
+  },
 ];

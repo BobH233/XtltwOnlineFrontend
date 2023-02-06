@@ -132,6 +132,7 @@
       fido2Login({
         username: formInline.username,
         loginParam: JSON.stringify(passableCredential),
+        remember: rememberForMonth.value,
       }).then(async (res) => {
         if (res.code == 200) {
           message.success('登录成功，即将进入系统');
